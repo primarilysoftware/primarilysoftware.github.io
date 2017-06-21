@@ -30,8 +30,8 @@ sass:
 # Author settings
 author:
   name     : "Jon Guy"
-  job      : "Software Engineer"
-  bio      : "I have been working as a software developer since 2010, focused mainly in .NET.  I am always trying to learn new things, and improve my craft."
+  job      : "Software Developer"
+  bio      : ""
   thumb    : /images/author.jpg
   email    : jon@primarilysoftware.com
   url      : http://primarilysoftware.github.io
