@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+      <Title>ValueObject2</Title>
+      <Author>[USERNAME]</Author>
+      <Description>
+      </Description>
+      <HelpUrl>
+      </HelpUrl>
+      <Shortcut>valueo2</Shortcut>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal Editable="true">
+          <ID>ValueTypeName</ID>
+          <ToolTip>ValueTypeName</ToolTip>
+          <Default>ValueTypeName</Default>
+          <Function>
+          </Function>
+        </Literal>
+        <Literal Editable="true">
+          <ID>PropertyType1</ID>
+          <ToolTip>PropertyType1</ToolTip>
+          <Default>string</Default>
+          <Function>
+          </Function>
+        </Literal>
+        <Literal Editable="true">
+          <ID>PropertyName1</ID>
+          <ToolTip>PropertyName1</ToolTip>
+          <Default>value1</Default>
+          <Function>
+          </Function>
+        </Literal>
+        <Literal Editable="true">
+          <ID>PropertyType2</ID>
+          <ToolTip>PropertyType2</ToolTip>
+          <Default>string</Default>
+          <Function>
+          </Function>
+        </Literal>
+        <Literal Editable="true">
+          <ID>PropertyName2</ID>
+          <ToolTip>PropertyName2</ToolTip>
+          <Default>value2</Default>
+          <Function>
+          </Function>
+        </Literal>
+      </Declarations>
+      <Code Language="csharp" Delimiter="$"><![CDATA[public class $ValueTypeName$ : IEquatable<$ValueTypeName$>
+{
+    public $ValueTypeName$($PropertyType1$ $PropertyName1$, $PropertyType2$ $PropertyName2$)
+    {
+        this.$PropertyName1$ = $PropertyName1$;
+        this.$PropertyName2$ = $PropertyName2$;
+    }
+
+    public $PropertyType1$ $PropertyName1$ { get; }
+    public $PropertyType2$ $PropertyName2$ { get; }
+
+    public override int GetHashCode()
+    {
+        unchecked
+        {
+            var hash = 17;
+            hash = hash * 23 + this.$PropertyName1$?.GetHashCode() ?? 0;
+            hash = hash * 23 + this.$PropertyName2$?.GetHashCode() ?? 0;            
+            return hash;
+        }
+    }
+
+    public override bool Equals(object obj)
+    {
+        return this.Equals(obj as $ValueTypeName$);
+    }
+
+    public bool Equals($ValueTypeName$ obj)
+    {
+        if (ReferenceEquals(obj, null))
+        {
+            return false;
+        }
+
+        return obj.$PropertyName1$ == this.$PropertyName1$ &&
+            obj.$PropertyName2$ == this.$PropertyName2$;
+    }
+
+    public static bool operator ==($ValueTypeName$ a, $ValueTypeName$ b)
+    {
+        if (ReferenceEquals(a, null) && ReferenceEquals(b, null))
+        {
+            return true;
+        }
+
+        if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
+        {
+            return false;
+        }
+
+        return a.Equals(b);
+    }
+
+    public static bool operator !=($ValueTypeName$ a, $ValueTypeName$ b)
+    {
+        return !(a == b);
+    }
+}]]></Code>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>
