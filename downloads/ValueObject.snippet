@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+      <Title>ValueObject</Title>
+      <Author>[USERNAME]</Author>
+      <Description>
+      </Description>
+      <HelpUrl>
+      </HelpUrl>
+      <Shortcut>valueo</Shortcut>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal Editable="true">
+          <ID>ValueTypeName</ID>
+          <ToolTip>ValueTypeName</ToolTip>
+          <Default>ValueTypeName</Default>
+          <Function>
+          </Function>
+        </Literal>
+        <Literal Editable="true">
+          <ID>PropertyType</ID>
+          <ToolTip>PropertyType</ToolTip>
+          <Default>string</Default>
+          <Function>
+          </Function>
+        </Literal>
+        <Literal Editable="true">
+          <ID>PropertyName</ID>
+          <ToolTip>PropertyName</ToolTip>
+          <Default>Value</Default>
+          <Function>
+          </Function>
+        </Literal>
+      </Declarations>
+      <Code Language="csharp" Delimiter="$"><![CDATA[public class $ValueTypeName$ : IEquatable<$ValueTypeName$>
+{
+    public $ValueTypeName$($PropertyType$ $PropertyName$)
+    {
+        this.$PropertyName$ = $PropertyName$;
+    }
+
+    public $PropertyType$ $PropertyName$ { get; }
+
+    public override int GetHashCode()
+    {
+        return this.$PropertyName$?.GetHashCode() ?? 0;
+    }
+
+    public override bool Equals(object obj)
+    {
+        return this.Equals(obj as $ValueTypeName$);
+    }
+
+    public bool Equals($ValueTypeName$ obj)
+    {
+        if (ReferenceEquals(obj, null))
+        {
+            return false;
+        }
+
+        return obj.Value == this.Value;
+    }
+
+    public static bool operator ==($ValueTypeName$ a, $ValueTypeName$ b)
+    {
+        if (ReferenceEquals(a, null) && ReferenceEquals(b, null))
+        {
+            return true;
+        }
+
+        if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
+        {
+            return false;
+        }
+
+        return a.Equals(b);
+    }
+
+    public static bool operator !=($ValueTypeName$ a, $ValueTypeName$ b)
+    {
+        return !(a == b);
+    }
+}]]></Code>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>
