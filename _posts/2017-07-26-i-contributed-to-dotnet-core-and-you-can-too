@@ -1,0 +1,49 @@
+---
+layout: post
+title: "I Contributed to .NET Core, and You can too"
+comments: true
+description: "A short post about how easy it was to contribute a pull request to .NET core"
+keywords: ".net, dotnet, core, open source, contribute"
+---
+My first job out of college was working as a .NET developer, and I have continued to work
+with .NET ever since, going on 7 years.  While I wasn't around for the dark ages of .NET 1.0 or 1.1 (can you
+imagine a world without generics or iterators?), I have been around long enough to see quite a bit evolve.  From
+LINQ, to `dynamic`, to `async`, Microsoft has continued to push .NET forward from a technology perspective,
+borrowing and pioneering new features and patterns for developing software.  That doesn't come as much of a
+surprise through.  *Microsoft's business is software*.  They know a thing or two about how to write code.
+
+What has been most surprising to me and many others about how .NET has evolved is Microsoft's recent pivot
+toward open source.  *Microsoft's business is software*.  This is M$ we are talking about right?  The
+anti-competitive monolith that has made bagillions of dollars selling its software?  Are they really going to turn
+around and start giving away their source code?  I was very skeptical as I watched this all unfold.  Microsoft did
+not seem to fit with the open source community.
+
+![Hello fellow kids]()
+
+But domino after domino has fallen.  From Node.js support in Windows, to open sourcing ASP.NET MVC, then all of
+.NET, and even migrating to GitHub, the software development world we now live in feels very different than the
+one I started in.  Something happened a few days ago that really drove this change home for me.  I submitted
+a pull request to the dotnet/corefx repo on GitHub.
+
+### It started with a bug
+I work for a fairly small software development shop, where we support a handful of different products, including
+a desktop app that uses WCF to call back home to our service layer.  Out of the blue, support started to see
+reports trickling in where users were getting errors in the desktop software calling our WCF service.  The first
+time support saw one of these reports, they thought it was a fluke.  Supporting desktop software, support frequently get calls
+from users blaming any and every PC related problem on our software.  We hadn't released any updates to this part of
+the app for months, so they felt pretty confident that this was not really our problem.
+
+Nonetheless, our company prides itself in customer service, so our support team will try to help as much as they can.
+They started to look at the usual suspects when network related errors pop up, antivirus, SSL/TLS cert issues, bad
+internet connection.  Nothing obvious turned up.  Thats when they called for ["the expert"](https://www.youtube.com/watch?v=BKorP55Aqvg).
+Unfortunately, our expert in this area was gone.  He had moved on to another company several months back.  Noone else knew much
+about this particular area of the code in the desktop app.  I happened to work on the service this code was
+calling back to, so naturally, this was my responsibility now...
+
+I have worked with WCF enough to know she can be a fickle mistress.  My first thought was some configuration issue.
+That led nowhere.  I have also known WCF to bury the real error message, so switched on trace logging.  Still nothing.
+All I had to go on was this error message:
+
+```csharp
+
+```
