@@ -1,0 +1,57 @@
+---
+layout: post
+title: "A Bug's Tale"
+comments: true
+description: "The story of one particularly interesting bug"
+keywords: ".net, dotnet, wcf, bug"
+---
+There is something so satisfying about tracking down a difficult bug
+
+### It started with a bug
+I work for a fairly small software development shop, where we support a handful of different products, including
+a desktop app that uses WCF to call back home to our service layer.  Out of the blue, support started to see
+reports trickling in where users were getting errors in the desktop software calling our WCF service.  The first
+time support saw one of these reports, they thought it was a fluke.  Supporting desktop software, support frequently get calls
+from users blaming any and every PC related problem on our software.  We hadn't released any updates to this part of
+the app for months, so they felt pretty confident that this was not really our problem.
+
+Nonetheless, our company prides itself in customer service, so our support team will try to help as much as they can.
+They started to look at the usual suspects when network related errors pop up, antivirus, SSL/TLS cert issues, bad
+internet connection.  Nothing obvious turned up.  In the mean time, new reports of this same issue started to come in.
+The numbers were small, maybe 20 of our 10,000 or so installs were having problems.  Not enough to make this a critical
+issue, but enough that this was definately not some fluke.
+
+Thats when support called for ["the expert"](https://www.youtube.com/watch?v=BKorP55Aqvg).
+Unfortunately, our expert in this area was gone.  He had moved on to another company several months back.  Noone else knew much
+about this particular area of the code in the desktop app.  I happened to work on the service this code was
+calling back to, so naturally, this was my responsibility now...
+
+I have worked with WCF enough to know she can be a fickle mistress.  My first thought was some configuration issue.
+That led nowhere.  I have also known WCF to bury the real error message, so switched on trace logging.  Still nothing
+very helpful.  The only error in the WCF trace log was:
+
+```csharp
+The request channel timed out while waiting for a reply after 00:00:59.8595997. Increase the timeout value passed
+to the call to Request or increase the SendTimeout value on the Binding. The time allotted to this operation may
+have been a portion of a longer timeout.
+```
+
+This wasn't much to go on.  I trolled through the server side logs, and couldn't find any evidence that the request was
+ever making it to our servers.  It looked like the request was getting dropped somewhere along the way.  It is not unheard of for an
+antivirus to drop requests like this, so we explored that avenue some more.  We went as far as temporarily disabling antivirus,
+but to no avail.
+
+I needed more information.  We were able to get System.Net trace logs and a Wireshark trace.  The System.Net trace showed
+a different error:
+
+```csharp
+System.Net.Sockets Error: 0 : [1916] Exception in Socket#45648486::Send - An existing connection was forcibly closed by the remote host.
+```
+
+So why was the connection getting reset?  The Wireshark trace showed something interesting:
+
+![Wireshark trace]()
+
+The TCP connection was being opened, then nothing.  10 seconds of nothing.  And then the connection was reset by the server.
+Since the client is connecting over https, you would expect to see the SSL/TLS handshake start.  Something strange was
+going on.
