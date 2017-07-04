@@ -132,7 +132,22 @@ Next, I ran the following command to kick off the training process:
 python retrain.py --bottleneck_dir=bottlenecks --how_many_training_steps=500 --model_dir=inception --summaries_dir=training_summaries\basic --output_graph=retrained_graph.pb --output_labels=retrained_labels.txt --image_dir=flower_photos
 ```
 
-This took quite a while to run on my laptop.
+The `retrain` script is going to do several things for us.  The first time you run it, it will generate
+"bottleneck" files for each image in the image set.  This is a performance optimization.  Since the
+lower layers of the network are not being retrained, this process is caching the output of that
+part of the network.
+
+After all the "bottleneck" files have been generated, training of the final layer of the network will
+begin.  While the training is happening, you can view a neat visualization of it's progress using
+`TensorBoard`.  To start `TensorBoard`, open another `Anaconda Prompt` and run the following commands
+to jump into your tensorflow environment and start `tensorboard`:
+
+```
+activate tensorflow
+tensorboard --logdir training_summaries &
+```
+
+This should spin up a website that you can browse to at [http://localhost:6006/](http://localhost:6006/).
 
 > The TensorFlow For Poets tutorial also mentioned starting up `tensorboard` to monitor the training
 > process.  I couldn't seem to get this to work right.  When I started it, nothing was showing up ¯\_(ツ)_/¯.
