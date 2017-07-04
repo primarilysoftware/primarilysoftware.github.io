@@ -148,6 +148,65 @@ tensorboard --logdir training_summaries &
 ```
 
 This should spin up a website that you can browse to at [http://localhost:6006/](http://localhost:6006/).
+Watching the evolution of the model unfold is pretty neat.  A couple of things to pay attention to.
+The `--summaries_dir` parameter used when retraining the model affects how the data for that run
+shows up in TensorBoard.  Note that in the command we executed above, I used `training_summaries\basic` for
+this parameter.  Looking at TensorBoard, in the runs section, you should see runs for `basic\train`
+and `basic\validation`.  Also not that when starting TensorBoard, I passed `--logdir training_summaries`.
+This is how TensorBoard knows where to find the training logs.  When experimenting, you may want
+to attempt multiple runs at training your model, changing various parameters between runs to see
+what works best.  When doing this, you would want to tweak the `--summaries_dir` parameter
+accordingly between runs.  For instance for a second run, you may want to change use something like
+`training_summaries\basic_v2`.  Once the retrain starts, you would then see `basic_v2\train` and
+`basic_v2\validation` enries in the _Runs_ section of TensorBoard.
 
-> The TensorFlow For Poets tutorial also mentioned starting up `tensorboard` to monitor the training
-> process.  I couldn't seem to get this to work right.  When I started it, nothing was showing up ¯\_(ツ)_/¯.
+With my model trained, I was ready to test it out.  The TensorFlow For Poets tutorial provides a
+python script for testing the model.  Run the following to save this script to your working
+directory:
+
+```
+curl -L https://goo.gl/3lTKZs > label_image.py
+```
+
+Now use this script on an image to see how the model performs:
+
+```
+python label_image.py flower_photos/daisy/21652746_cc379e0eea_m.jpg
+```
+
+My model produced the following result:
+
+```
+daisy (score = 0.99754)
+sunflowers (score = 0.00173)
+dandelion (score = 0.00057)
+tulips (score = 0.00012)
+roses (score = 0.00004)
+```
+
+Awesome!  I tried it on some random images I found only as well.
+
+![daisy](https://raw.githubusercontent.com/primarilysoftware/primarilysoftware.github.io/master/downloads/tensorflow-image-classification/daisy.jpg)
+
+```
+daisy (score = 0.98233)
+dandelion (score = 0.00949)
+tulips (score = 0.00411)
+sunflowers (score = 0.00399)
+roses (score = 0.00008)
+```
+
+That was pretty easy though, what if I try to trick the model?
+
+![lilly](https://raw.githubusercontent.com/primarilysoftware/primarilysoftware.github.io/master/downloads/tensorflow-image-classification/lilly.jpg)
+
+```
+tulips (score = 0.78723)
+roses (score = 0.19735)
+sunflowers (score = 0.01342)
+daisy (score = 0.00168)
+dandelion (score = 0.00033)
+```
+
+So this model thinks that a lilly looks a lot like a tulip.  It feels weird to write this, but I think
+I agree with the model.
