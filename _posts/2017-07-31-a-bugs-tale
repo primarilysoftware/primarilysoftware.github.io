@@ -115,4 +115,20 @@ of me get a WCF call to succeed.  This made me think that maybe WCF was the prob
 from the call stack altogether.  I hacked together some code to call our service using the `TcpClient` and `SslStream`
 classes.
 
-What
+```csharp
+using (var tcpClient = new TcpClient("our.domain.name", 443))
+using (var sslStream = new SslStream(tcpClient.GetStream()))
+{
+    sslStream.AuthenticateAsClient("our.domain.name");
+    var request = ...;
+    sslStream.Write(request);
+}
+```
+
+We tried this out on one of the affected machines, and again it didn't work.  So whatever the issue was, it was beneath
+the WCF stack.  The call to `AuthenticateAsClient` was taking 30 seconds.  This lined up perfectly with what we saw in 
+the Wireshark trace, but I couldn't figure out why this was happening.
+
+I was starting to think this must be a bug deep down in the .NET framework.  Since the issue was occurring in the
+`AuthenticateAsClient` call, I started to look for alternative SSL/TLS implementations.  This led me to the
+(Bouncy Castle library)[http://www.bouncycastle.org/csharp/].
