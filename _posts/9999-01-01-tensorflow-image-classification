@@ -111,7 +111,7 @@ conda install --name tensorflow curl
 
 Now I could run the curl command to download the set of flower images into my working directory.
 
-> Not the image set is ~218MB, so this could take a while depending on your internet connection.
+> Note the image set is ~218MB, so this could take a while depending on your internet connection.
 
 Ok, I have the images now, but they are in a gzip'ed tarball.  To extract the images on Windows,
 I used [7zip](http://www.7-zip.org/download.html), though there are a variety of alternatives.  Use
@@ -122,9 +122,13 @@ At this point, the example on the TensorFlow website started to break down for m
 to run some `bazel build` commands that just didn't seem right.  I started following along with
 another example,
 [TensorFlow For Poets](https://codelabs.developers.google.com/codelabs/tensorflow-for-poets/#4).
-I picked up with this example at the part where it instucted you to download the
+I picked up with this example at the part where it instructed you to download the
 [retrain.py](https://raw.githubusercontent.com/tensorflow/tensorflow/r1.1/tensorflow/examples/image_retraining/retrain.py)
 file.  I downloaded this file and saved it to my 'flowers' working directory.
+
+```
+curl -L https://raw.githubusercontent.com/tensorflow/tensorflow/r1.1/tensorflow/examples/image_retraining/retrain.py > retrain.py
+```
 
 Next, I ran the following command to kick off the training process:
 
@@ -151,14 +155,14 @@ This should spin up a website that you can browse to at [http://localhost:6006/]
 Watching the evolution of the model unfold is pretty neat.  A couple of things to pay attention to.
 The `--summaries_dir` parameter used when retraining the model affects how the data for that run
 shows up in TensorBoard.  Note that in the command we executed above, I used `training_summaries\basic` for
-this parameter.  Looking at TensorBoard, in the runs section, you should see runs for `basic\train`
-and `basic\validation`.  Also not that when starting TensorBoard, I passed `--logdir training_summaries`.
+this parameter.  Looking at TensorBoard, in the _Runs_ section, you should see runs for `basic\train`
+and `basic\validation`.  Also note that when starting TensorBoard, I passed `--logdir training_summaries`.
 This is how TensorBoard knows where to find the training logs.  When experimenting, you may want
 to attempt multiple runs at training your model, changing various parameters between runs to see
 what works best.  When doing this, you would want to tweak the `--summaries_dir` parameter
-accordingly between runs.  For instance for a second run, you may want to change use something like
-`training_summaries\basic_v2`.  Once the retrain starts, you would then see `basic_v2\train` and
-`basic_v2\validation` enries in the _Runs_ section of TensorBoard.
+accordingly between runs.  For instance for a second run, you may want to use something like
+`training_summaries\basic_v2` for your `--summaries_dir`.  Once the retrain starts, you would then see `basic_v2\train` and
+`basic_v2\validation` entries in the _Runs_ section of TensorBoard.
 
 With my model trained, I was ready to test it out.  The TensorFlow For Poets tutorial provides a
 python script for testing the model.  Run the following to save this script to your working
@@ -184,7 +188,7 @@ tulips (score = 0.00012)
 roses (score = 0.00004)
 ```
 
-Awesome!  I tried it on some random images I found only as well.
+Awesome!  I tried it on some random images I found as well.
 
 ![daisy](https://raw.githubusercontent.com/primarilysoftware/primarilysoftware.github.io/master/downloads/tensorflow-image-classification/daisy.jpg)
 
@@ -209,4 +213,10 @@ dandelion (score = 0.00033)
 ```
 
 So this model thinks that a lilly looks a lot like a tulip.  It feels weird to write this, but I think
-I agree with the model.
+I can see a similarity there.
+
+### Goose Classification
+So I was able to get a sample image classifier working in TensorFlow, now I want to try and adapt this sample to my own
+problem, identifying geese in images.  In order to train the model, I was going to need some training images.  In my case, 
+I was only going to have 2 classes, goose and not-goose.  So I needed a way to download a bunch of images for each of these
+classes.
