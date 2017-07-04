@@ -90,3 +90,33 @@ ran the follwing:
 
 While the `tf.Session()` command generated a bunch of warnings about SSE, AVX, and FMA instructions
 being available, but not targeted in my TensorFlow build, everything did appear to work just fine.
+
+### Flower Classification
+With my environment setup, I was ready to start working through the Flower Classification example.  The
+example was apparently written for a linux audience, so I had do deviate in a few places.  I started
+off by creating a clean working directory for this experiment.  Mine is called `flowers`.  First off,
+the example instructs you to download the set of flower photos:
+
+```
+curl -O http://download.tensorflow.org/example_images/flower_photos.tgz
+```
+
+If you are running on Windows like me, you probably do not have `curl`.  Anaconda really starts to
+shine here.  You are able to install all sorts of packages from Anaconda into your environment.  To
+install `curl` into my `tensorflow` environment, I ran the following:
+
+```
+conda install --name tensorflow curl
+```
+
+Now I could run the curl command to download the set of flower images into my working directory.
+
+> Not the image set is ~218MB, so this could take a while depending on your internet connection.
+
+Ok, I have the images now, but they are in a gzip'ed tarball.  To extract the images on Windows,
+I used [7zip](http://www.7-zip.org/download.html), though there are a variety of alternatives.  Use
+whatever makes you happy :).  After extracting the flower images, I now have a sub-directory in my
+`flowers` working directory, `flower_photos`.
+
+At this point, the example on the TensorFlow website started to break down for me.  It was telling me
+to run some `bazel build` commands.
