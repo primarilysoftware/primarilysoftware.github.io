@@ -13,11 +13,11 @@ kind of bugs.  While it may have cost me a few hair folicles, the payoff at the 
 ### How it all started
 I work for a fairly small software development shop.  We support a handful of different products, including
 a desktop app that uses WCF to call back home to our service layer.  Out of the blue, we got a report from a user
-saying they were getting timeout errors in the desktop software related to some functions that clalled back tour
-our WCF service.  Initially, our support time thought this must be a fluke.  If our service was down, we would have
+saying they were getting timeout errors in the desktop software related to some functions that clalled back to 
+our WCF service.  Initially, our support team thought this must be a fluke.  If our service was down, we would have
 been flooded with calls.  This was just a single desktop, in an office with several installations.  Being desktop
-software, support frequently get calls from users blaming our software for any and every PC related problem they 
-may have.  Wehadn't released any updates to this part of the app for months, so support felt pretty confident that
+software, support frequently gets calls from users blaming our software for any and every PC related problem they 
+may have.  We hadn't released any updates to this part of the app for months, so support felt pretty confident that
 this was not really our problem.
 
 Nonetheless, our company prides itself in customer service, so our support team will try to help as much as they can.
@@ -29,7 +29,7 @@ issue, but enough that we couldn't write this off as some fluke.
 Thats when support called for ["the expert"](https://www.youtube.com/watch?v=BKorP55Aqvg).
 Unfortunately, our expert in this area was gone.  He had moved on to another company several months back.  Noone else knew much
 about this particular area of the code in the desktop app, certainly not me.  I happened to work on the service this code was
-calling back to, so naturally, I was the unfortunate heir to this inheritance.
+calling back to, so naturally, I became the reluctant heir to this problem.
 
 ###Digging In
 I have worked with WCF enough to know she can be a fickle mistress.  My first thought was some configuration issue.
@@ -95,22 +95,60 @@ I was quickly disappointed.  This change made no difference.  I was stubborn tho
 this line of thinking, partly because I couldn't come up with any other plausible explanations for why these clients were
 having issues.
 
-Could these clients connect to our service using _any_ SSL/TLS protocol?  I decided to put together a test app to gather information
-in a more controlled way.  The test app was written in .NET 4.6, so I wouldn't need to rely on the hack above.  This also allowed me
-to rule out any possiblity that this had something to do with our desktop app.  The test app was simple.  It
-just made a series of calls to our WCF service, switching from SSL 3.0, to TLS 1.0, to TLS 1.1, to TLS 1.2.
+## A Controlled Experiment
+The next question I wanted to answer was, could these clients make a WCF call to our service using _any_ SSL/TLS protocol?
+I decided to put together a test app to gather information in a more controlled way.  I wrote a little .NET 4.6
+console app that attempted a series of WCF calls, switching from SSL 3.0, to TLS 1.0, to TLS 1.1, to TLS 1.2.
 
-While I was at it, I decided to try a different message encoding too.  Our app used msbin.  Maybe a firewall was doing
-deep packet inspection (DPI), seeing the binary data, and blocking it?  I put together an alternative endpoint on our
-server that accepted plain XML, and added calls in the test app to hit that XML endpoint, again attempting all the different
-SSL/TLS protocols.
+As I was putting together this test app, I started to develop another theory.  Our WCF service was configured to use `msbin` for the 
+message encoding.  Maybe these clients had a firewall that was doing deep packet inspection (DPI), and was dropping these
+packets because of the binary data?  I decided to test that theory out as well.  I exposed a plain XML endpoint for our
+service, and added a second series of calls to the test app that went to this new XML endpoint, still cycling through all the 
+different SSL/TLS protocols.
 
-Lo and behold!  None of the calls worked...  I can't say that I wasn't disappointed with the result, but it did prove a 
-few things.  This was not a problem with something specific to our desktop app, and this had nothing to do with the SSL/TLS
-protocol being used.
+We got a chance to try this test app out on one of the affected machines, and lo and behold!  None of the calls worked...
+I can't say that I wasn't disappointed with the result, but it did prove a few things in my mind.  This was not a problem
+with something specific to our desktop app.  I had just built an entirely new app, fresh source code, and it too was
+experiencing the same issues.  Also, I was now convinced that this had nothing to do with the SSL/TLS
+protocol being used, and it seemed very unlikely that this was a antivirus/firewall issue.
 
+### A More Improbable Explanation
 I was ruling out some possible explanations, but I didn't feel like I was getting closer to finding what was actually
-going wrong.  My test in the browser proved that these machines could access our service, but I could not for the life
+going wrong.  Reviewing all the information I had gathered up to this point, my test in the browser proved that these
+machines could access our service, while the Wireshark trace showed that the SSL/TLS handshake was not starting, though my
+test app suggested that this was not an issue related to any specific SSL/TLS protocol.
+
+Something must have changed on these systems.  They were working fine one day, and stopped working the next.  We knew it
+wasn't our code that changed.  We decided to start looking for other things that may have changed.  Two areas sprang to
+mind in particular.  First, was there any other software that had been installed recently on these machines?  I could
+imagine a scenario where some 3rd party app came in, mucked with the registry, and started breaking things.  The other
+thing that came to mind was a problematic Windows patch.  Even Microsoft makes mistakes when building software (can you
+believe that?), so it is not unheard of for a patch to cause unexpected issues.
+
+There is a command you can use to get a list of hotfixes applied to a machine:
+
+```
+wmic qfe list full
+```
+
+I asked our support team to start gathering this data anytime they got a report of the issue.  This allowed me to look for
+a two things.  Could we identify a patch common to all of these affected machines?  Which patches were installed around the 
+the time the machine started having issues?  On the first machine we got this information from, there was one patch
+that jumped off the page,
+[KB4014504](https://support.microsoft.com/en-us/help/4014504/description-of-the-security-and-quality-rollup-for-the-net-framework-3).
+While this patch said it was for .NET 3.5, everything else about it seemed suspect.  Microsoft's description of the patch was:
+
+> This security update for the Microsoft .NET Framework resolves a security feature bypass vulnerability in which the .NET Framework
+> (and the .NET Core) components do not completely validate certificates.
+
+So the patch was directly related to SSL/TLS, and it had been installed on this machine the same day they started seeing
+issues.  Digging into the details of what changed a little deeper, with this change .NET would start validating  the
+[EKU extension](https://tools.ietf.org/html/rfc5280#section-4.2.1.12) of a certificate.  I had never heard of this extension
+before, so I quickly read through the proposal and tried to verify that our cert had been issued properly.  I also passed
+this along to our infrustructure team, and they assurred me that everything was in order with our cert.  I was still skeptical,
+the circumstances surrounding this patch seemed 
+
+but I could not for the life
 of me get a WCF call to succeed.  This made me think that maybe WCF was the problem.  I decided to try and remove WCF
 from the call stack altogether.  I hacked together some code to call our service using the `TcpClient` and `SslStream`
 classes.
