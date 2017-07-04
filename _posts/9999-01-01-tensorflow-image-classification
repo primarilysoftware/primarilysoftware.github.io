@@ -1,0 +1,92 @@
+---
+layout: post
+title: "TensorFlow Image Classification"
+comments: true
+description: "My first stab at using TensorFlow for image classification"
+keywords: "tensorflow, image classification, machine learning, neural net"
+---
+
+My dad has a house on a lake.  One of the first things he did after purchasing the house was rebuild
+the shore line.  What had been a wall of decaying wood and gravel, was transformed into a beautiful
+stone boardwalk, culminating with a set of stone steps that descended gently into the water.  It 
+looked great, and just as importantly, created an amazing space for he, his children, and his
+grandchildren to spend time together.
+
+He soon discovered a problem though.  These same stone steps that made the lake so inviting to his family,
+also invited some unwanted guests, canadian geese.  I have grown to despise these creatures.  I live
+in an area where in the summer, they seemingly take over every pond, lake, and sometimes even, parking
+lot, honking at and charging anyone who dares approach.  Whats more, even when they take leave
+from a particular area, they leave behind trails of crap.  Literally, crap.  Nearly every morning, my
+dad would come down to the shore to see his lovely stone boardwalk defaced with the entrails of these
+nastly creatures.
+
+He was determined to do something about it.  His first attempt was a goose fence.
+This worked fairly well, but was unsightly, and a nuissance when it came to taking care of the yard.
+He ended up taking it down, hoping it had served its purpose.  It was only a few days before these
+geese came back.
+
+My brother and law and I are "computer guys", and jokingly discussed alternative solutions.  We arrived
+at the idea of an automated water gun.  We both could imagine a system where a camera could monitor
+the area, leveraging some of the recent advancements in image classification to identify when geese
+came near, triggering a water gun to fire at the geese, hopefully scaring them away.  It was a fun
+idea, that started as mostly a joke.  I kept thinking about it though, and started to wonder how
+difficult it would be to really pull this off?
+
+With any sufficiently challenging problem, you have to break it down into managable pieces.  While
+I do not know if I will ever complete the vision of an automated goose water gun, I thought it would
+be a great learning oppurtunity to see if I could break off one of the pieces, identifying geese
+within images from a camera feed.  Not a day goes by without me seeing some new article about how
+machine learning and neural nets were used in some cool new way.  While I have studied the subject
+a little, I have never tried to apply these ideas to a real problem.  I felt like this goose
+recognition problem would be a nice gateway for me into that space, so I set off on this journey.
+
+### TensorFlow
+When I think of machine learning, the first thing that comes to mind is Google.  They seem to be at
+the forefront of this space, applying machine learning techniques to solve real world problems.  I
+had read about TensorFlow in the past.  Their website describes it as follows:
+
+> TensorFlow™ is an open source software library for numerical computation using data flow graphs.
+
+That sounds cool, if not a bit abstract.  As I explored the various libraries out there in this space,
+what really sold me on TensorFlow was the excellent documentation.  In fact, their docs describe a
+technique for [classifying flowers](https://www.tensorflow.org/tutorials/image_retraining)
+that looked like a template for the goose classification problem I was trying to solve.
+
+This looked to be as good a library as any to get started with, so I decided to give it a try.  I
+set out to reproduce the flowers example, before adapting it for my goose problem.
+
+### Setting up my environment
+I began by setting up my environment to work with TensorFlow.  Again, the docs were great in this
+respect.  I am working on a Windows laptop, so I followed the instructions for
+[Installing with Anaconda](https://www.tensorflow.org/install/install_windows).  Anaconda was
+new to me, but what a cool idea!  From what I have gathered, it provides a sort of virtualization
+layer, allowing you to setup multiple environments on one machine for working on data science
+problems.  It feels almost like a Docker for Data.  I downloaded and installedAnaconda from
+[here](https://www.continuum.io/downloads).  I then launched the `Anaconda Prompt`, and ran a few
+commands to setup my environment:
+
+```
+conda create -n tensorflow python=3.5
+...
+activate tensorflow
+...
+pip install --ignore-installed --upgrade https://storage.googleapis.com/tensorflow/windows/cpu/tensorflow-1.2.1-cp35-cp35m-win_amd64.whl
+```
+
+> Note that I installed the CPU version for TensorFlow, since my laptop does not have an NVIDIA GPU.
+> If you do have an NVIDIA GPU, TensorFlow can leverage the CUDA platform to get improved performance.
+> The GPU version can be installed with this command
+> `pip install --ignore-installed --upgrade https://storage.googleapis.com/tensorflow/windows/gpu/tensorflow_gpu-1.2.1-cp35-cp35m-win_amd64.whl`
+
+After everything was setup, I launched python from within my tensorflow enironment in Anaconda, and
+ran the follwing:
+
+```python
+>>> import tensorflow as tf
+>>> hello = tf.constant('Hello, TensorFlow!')
+>>> sess = tf.Session()
+>>> print(sess.run(hello))
+```
+
+While the `tf.Session()` command generated a bunch of warnings about SSE, AVX, and FMA instructions
+being available, but not targeted in my TensorFlow build, everything did appear to work just fine.
