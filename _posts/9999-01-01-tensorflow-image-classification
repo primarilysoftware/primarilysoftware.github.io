@@ -119,4 +119,20 @@ whatever makes you happy :).  After extracting the flower images, I now have a s
 `flowers` working directory, `flower_photos`.
 
 At this point, the example on the TensorFlow website started to break down for me.  It was telling me
-to run some `bazel build` commands.
+to run some `bazel build` commands that just didn't seem right.  I started following along with
+another example,
+[TensorFlow For Poets](https://codelabs.developers.google.com/codelabs/tensorflow-for-poets/#4).
+I picked up with this example at the part where it instucted you to download the
+[retrain.py](https://raw.githubusercontent.com/tensorflow/tensorflow/r1.1/tensorflow/examples/image_retraining/retrain.py)
+file.  I downloaded this file and saved it to my 'flowers' working directory.
+
+Next, I ran the following command to kick off the training process:
+
+```
+python retrain.py --bottleneck_dir=bottlenecks --how_many_training_steps=500 --model_dir=inception --summaries_dir=training_summaries\basic --output_graph=retrained_graph.pb --output_labels=retrained_labels.txt --image_dir=flower_photos
+```
+
+This took quite a while to run on my laptop.
+
+> The TensorFlow For Poets tutorial also mentioned starting up `tensorboard` to monitor the training
+> process.  I couldn't seem to get this to work right.  When I started it, nothing was showing up ¯\_(ツ)_/¯.
