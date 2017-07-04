@@ -1,0 +1,10 @@
+---
+layout: post
+title: "Anaconda, Docker for Data"
+comments: true
+description: "A brief into into Anaconda, a platform for working on data science problems"
+keywords: "anaconda, machine learning, data science"
+---
+
+I think this topic could use a better intro than what is on the Anaconda website, so I would
+like to try and fill that void.
