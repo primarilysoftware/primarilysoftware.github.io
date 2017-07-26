@@ -176,6 +176,174 @@ using (var sslStream = new SslStream(tcpClient.GetStream()))
 
 We tried this out on one of the affected machines, and again it didn't work.  So whatever the issue was, it was beneath
 the WCF stack.  The call to `AuthenticateAsClient` was taking 30 seconds.  This lined up with what we were seeing in
-the WireShark trace, the TCP connection was opened successfully, but the SSL/TLS handshake never started.  Something
+the WireShark trace.  The TCP connection was opened successfully, but the SSL/TLS handshake was getting hung up.  Something
 was going wrong in that `AuthenticateAsClient` call.  I started to look for alternative SSL/TLS implementations for .NET,
 thinking this could be a bug somewhere in the BCL.  This led me to the (Bouncy Castle library)[http://www.bouncycastle.org/csharp/].
+I updated the test app I had written, adding some code to attempt calling our service using the Bouncy Castle APIs.  There
+were a couple of hoops to jump through.  I needed to provide an implementation for the `DefaultTlsClient` and 
+`TlsAuthentication` classes, but it wasn't too painful:
+
+```csharp
+public class MyTlsClient : DefaultTlsClient
+{
+    public override TlsAuthentication GetAuthentication()
+    {
+        return new MyTlsAuthentication();
+    }
+
+    public override int[] GetCipherSuites()
+    {
+        return base.GetCipherSuites();
+    }
+}
+
+public class MyTlsAuthentication : TlsAuthentication
+{
+    public TlsCredentials GetClientCredentials(CertificateRequest certificateRequest)
+    {
+        return null;
+    }
+
+    public void NotifyServerCertificate(Certificate serverCertificate)
+    {
+        // don't care
+    }
+}
+```
+
+With that out of the way, I could attempt the service call as follows:
+
+```csharp
+
+using (var tcpClient = new TcpClient("our.domain.name", 443))
+{
+    var handler = new TlsClientProtocol(tcpClient.GetStream(), SecureRandom.GetInstance("SHA1PRNG"));
+    handler.Connect(new MyTlsClient());
+
+    var request = // used same fiddler capture as before
+    handler.Stream.Write(request);
+}
+```
+
+We tested this out on one of the affected machines, and it worked!  I was somehow excited, confused, and worried all
+at once with this result.  I was excited that I had gotten the call to work, and it all but proved that this bug
+was not with our code.  Confused because I still couldn't explain why this worked, and the `SslStream` version
+didn't.  Worried wondering how we would be able to fix this, since the bug was not in our code.  Turns out our clients
+do not really care if the bug is in our code, or .NET, or Windows, they just wanted to be able to use the software
+they were paying good money for.
+
+### Read the Source
+![read the source, Luke]()
+
+Once upon a time, there lived an evil king who ruled upon a throne of prioprietary software and anti-competitive practices...
+
+That was a long time ago though.  The king has since left (off trying to (rid the world of malaria)[https://www.gatesfoundation.org/]
+and what not), and the kingdom he left behind has transformed into something few people could have imagined.
+
+Microsoft &hearts; Open Source.
+
+For real, you can go browse the (full source code)[http://referencesource.microsoft.com/] to the .NET Framework right now.
+
+I had a good idea where my problem was, the `AuthenticateAsClient` method, so I looked up the 
+(implementation for that method)[http://referencesource.microsoft.com/#System/net/System/Net/SecureProtocols/SslStream.cs,e34758c5b3de83df]
+and starting walking through the code.  Nothing really jumped out at me.  I saw some initialization code around
+standing up a `SecureChannel` instance.  I was starting to make some connections though between what I had seen in the
+System.Net trace logs, and what I was seeing in the source code.  Here are 2 consecutive log entries from that log file:
+
+```csharp
+System.Net Information: 0 : [4436] ConnectStream#21800467 - Sending headers
+{
+Content-Type: application/soap+msbin1
+Host: our.domain.name
+Content-Length: 805
+Expect: 100-continue
+Accept-Encoding: gzip, deflate
+Connection: Keep-Alive
+}.
+    ProcessId=3020
+    DateTime=2017-06-05T21:43:54.3987861Z
+System.Net Information: 0 : [4436] SecureChannel#61986480::.ctor(hostname=fulfillment.creditinfonet.com, #clientCertificates=0, encryptionPolicy=RequireEncryption)
+    ProcessId=3020
+    DateTime=2017-06-05T21:44:24.4028294Z
+```
+
+Notcie that 30 seconds pass between opening the stream, and when the `SecureChannel` constructor is invoked.  From the
+(source code)[http://referencesource.microsoft.com/#System/net/System/Net/_SecureChannel.cs,c597b80ee5e0e08b], I could
+see that log line is the first line in the body of the constructor.  This must mean the issue is occurring somewhere
+between the start of the `AuthenticateAsClient` method, and when the `SecureChannel` constructor was being invoked, right?
+I certainly thought so.  I spent far more time that I would like to admit scrutinizing every single one of those 45 or so
+lines of code.  I just couldn't find anything to explain what I was seeing.
+
+### Digging Deeper
+![we need to go deeper]()
+
+I was starting to wonder, what if this is not a .NET problem?  What if it goes deeper than that?  Could there be a problem
+with some system call that .NET was making?  It seemed very unlikely, but I didn't know what else to look for.  I found an
+awesome tool called (API Monitor)[http://www.rohitab.com/apimonitor] that logs Windows API calls that your application 
+makes.  We once again got on one of these client's machines (this was getting embarassing at this point) so that we could
+grab an API Monitor trace while the test app I had written was running.  API Monitor collects _a lot_ of data.  It took me 
+some time to dig through all of it.  I started off by correlating timestamps between the System.Net trace log, and the
+API Monitor trace, trying to hone in on any system calls being made during the long pause I was seeing.  Unfortunately, there
+were thousands of calls logged during that time, too many for me to make sense of.  I then started playing around with the
+filters in API Monitor, eventually arriving at a filter to only show calls taking more than 1 second:
+
+[API Monitor trace]()
+
+I had found a smoking gun!  One system call was consistently taking ~15 seconds to complete, `CryptFindOIDInfo`.  I reviewed
+[the docs](https://msdn.microsoft.com/en-us/library/windows/desktop/aa379938(v=vs.85).aspx) for this API to get a better idea
+about what it was used for.  The docs include one very important remark:
+
+> The CryptFindOIDInfo function performs a lookup in the active directory to retrieve the friendly names of OIDs under the following conditions:
+> - The key type in the dwKeyType parameter is set to CRYPT_OID_INFO_OID_KEY or CRYPT_OID_INFO_NAME_KEY.
+> - No group identifier is specified in the dwGroupId parameter or the GroupID refers to EKU OIDs, policy OIDs or template OIDs.
+
+### Putting together the pieces
+OK, so I knew exactly which system call was causing the delay, `CryptFindOIDInfo`, and I had a good idea why it could take awhile, 
+since it may do a lookup against the domain controller.  This also helped to explain why we were seeing such a small number
+of users reporting this issue, the vast majority of our client's machine's were not part of a domain.  The big open question was,
+why did this start happening out of the blue?
+
+I went back to the .NET source code to try and find my answer.  I wanted to find where this `CryptFindOIDInfo` call was being made.
+This turned out to be easier said than done.  I found 7 different `extern` definitions for the `CryptFindOIDInfo` method in the source code.  I had
+to review the call hierarchy for all of these to try and work my way back to the `SslStream` code.  I _finally_ found my way back to
+[here](http://referencesource.microsoft.com/#System/net/System/Net/_SecureChannel.cs,85):
+
+```csharp
+private readonly Oid m_ServerAuthOid = new Oid("1.3.6.1.5.5.7.3.1");
+private readonly Oid m_ClientAuthOid = new Oid("1.3.6.1.5.5.7.3.2");
+
+internal SecureChannel(string hostname, bool serverMode, SchProtocols protocolFlags, X509Certificate serverCertificate, X509CertificateCollection clientCertificates, bool remoteCertRequired, bool checkCertName, 
+                                          bool checkCertRevocationStatus, EncryptionPolicy encryptionPolicy, LocalCertSelectionCallback certSelectionDelegate)
+{
+    GlobalLog.Enter("SecureChannel#" + ValidationHelper.HashString(this) + "::.ctor", "hostname:" + hostname + " #clientCertificates=" + ((clientCertificates == null) ? "0" : clientCertificates.Count.ToString(NumberFormatInfo.InvariantInfo)));
+    ...    
+}
+```
+
+I had been here before.  It took a while for it to sink in.  Remember these trace logs?
+
+```csharp
+System.Net Information: 0 : [4436] ConnectStream#21800467 - Sending headers
+{
+Content-Type: application/soap+msbin1
+Host: our.domain.name
+Content-Length: 805
+Expect: 100-continue
+Accept-Encoding: gzip, deflate
+Connection: Keep-Alive
+}.
+    ProcessId=3020
+    DateTime=2017-06-05T21:43:54.3987861Z
+System.Net Information: 0 : [4436] SecureChannel#61986480::.ctor(hostname=fulfillment.creditinfonet.com, #clientCertificates=0, encryptionPolicy=RequireEncryption)
+    ProcessId=3020
+    DateTime=2017-06-05T21:44:24.4028294Z
+```
+
+I had assumed that since the long pause came before the `SecureChannel#` log line, the issue was occurring prior to the `SecureChannel`
+constructor was invoked.  The devil is always in the details.  In C#, instance fields are initialized before the contructor body
+executes.  In this case, `m_ServerAuthOid` and `m_ClientAuthOid` were being intialized, triggering the call to `CryptFindOIDInfo`.
+
+So why was this just now becoming an issue?  I reviewed the `SecureChannel` implementation in a prior version of the .NET framework,
+and noticed that these OID lookups had not been happening.  That also made me think of that patch I had investigated previously,
+[KB4014504](https://support.microsoft.com/en-us/help/4014504/description-of-the-security-and-quality-rollup-for-the-net-framework-3).
+
