@@ -124,8 +124,8 @@ going wrong.  Reviewing all the information I had gathered up to this point, my 
 machines could access our service, while the Wireshark trace showed that the SSL/TLS handshake was not starting, though my
 test app suggested that this was not an issue related to any specific SSL/TLS protocol.
 
-Something must have changed on these systems.  They were working fine one day, and stopped working the next.  We knew it
-wasn't our code that changed.  We decided to start looking for other things that may have changed.  Two areas sprang to
+Something must have changed on these systems.  They were working fine one day, and stopped working the next.  I knew it
+wasn't our code that changed.  I decided to start looking for other things that may have changed.  Two areas sprang to
 mind in particular.  First, had any other software been installed recently on these machines?  I could
 imagine a scenario where some 3rd party app came in, mucked with the registry, and started breaking things.  The other
 thing that came to mind was a problematic Windows patch.  Even Microsoft makes mistakes when building software (can you
@@ -137,9 +137,9 @@ There is a command you can use to get a list of hotfixes applied to a machine:
 wmic qfe list full
 ```
 
-I asked our support team to start gathering this data anytime they got a report of the issue.  This allowed me to look for
-a two things.  Could we identify a patch common to all of these affected machines?  Which patches were installed around the 
-the time the machine started having issues?  On the first machine we got this information from, there was one patch
+I asked our support team to start gathering this data anytime they got a report of the issue.  This allowed me to address
+two questions.  Could we identify a patch common to all of these affected machines?  And which patches were installed around the 
+the time the machine started having issues?  On the first machine we got this information from, I found one patch in the list
 that jumped off the page,
 [KB4014504](https://support.microsoft.com/en-us/help/4014504/description-of-the-security-and-quality-rollup-for-the-net-framework-3).
 While this patch said it was for .NET 3.5, everything else about it seemed suspect.  Microsoft's description of the patch was:
@@ -228,9 +228,11 @@ using (var tcpClient = new TcpClient("our.domain.name", 443))
 We tested this out on one of the affected machines, and it worked!  I was somehow excited, confused, and worried all
 at once with this result.  I was excited that I had gotten the call to work, and it all but proved that this bug
 was not with our code.  Confused because I still couldn't explain why this worked, and the `SslStream` version
-didn't.  Worried wondering how we would be able to fix this, since the bug was not in our code.  Turns out our clients
-do not really care if the bug is in our code, or .NET, or Windows, they just wanted to be able to use the software
-they were paying good money for.
+didn't.  Worried wondering how we would be able to fix this, since the bug was not in our code.
+
+Besides, our clients did not really care if the bug was in our code, or .NET, or Windows, they just wanted to be able to use the software
+they were paying for.  So, while I felt like I had made some progress, I still had more work to do.  I needed to find
+what was causing this problem.
 
 ### Read the Source
 ![read the source, Luke]()
@@ -267,7 +269,7 @@ System.Net Information: 0 : [4436] SecureChannel#61986480::.ctor(hostname=fulfil
     DateTime=2017-06-05T21:44:24.4028294Z
 ```
 
-Notcie that 30 seconds pass between opening the stream, and when the `SecureChannel` constructor is invoked.  From the
+Notice that 30 seconds pass between opening the stream, and when the `SecureChannel` constructor is invoked.  From the
 (source code)[http://referencesource.microsoft.com/#System/net/System/Net/_SecureChannel.cs,c597b80ee5e0e08b], I could
 see that log line is the first line in the body of the constructor.  This must mean the issue is occurring somewhere
 between the start of the `AuthenticateAsClient` method, and when the `SecureChannel` constructor was being invoked, right?
@@ -340,10 +342,41 @@ System.Net Information: 0 : [4436] SecureChannel#61986480::.ctor(hostname=fulfil
 ```
 
 I had assumed that since the long pause came before the `SecureChannel#` log line, the issue was occurring prior to the `SecureChannel`
-constructor was invoked.  The devil is always in the details.  In C#, instance fields are initialized before the contructor body
+constructor being invoked.  The devil is always in the details.  In C#, instance fields are initialized before the contructor body
 executes.  In this case, `m_ServerAuthOid` and `m_ClientAuthOid` were being intialized, triggering the call to `CryptFindOIDInfo`.
 
-So why was this just now becoming an issue?  I reviewed the `SecureChannel` implementation in a prior version of the .NET framework,
-and noticed that these OID lookups had not been happening.  That also made me think of that patch I had investigated previously,
-[KB4014504](https://support.microsoft.com/en-us/help/4014504/description-of-the-security-and-quality-rollup-for-the-net-framework-3).
+So why was this just now becoming an issue?  Well, remember that patch from before,
+[KB4014504](https://support.microsoft.com/en-us/help/4014504/description-of-the-security-and-quality-rollup-for-the-net-framework-3)?
+These OIDs being initialized were the OIDs for the Client Authentication and the Service Authentication usages of the EKU extension.
+This issue _had_ to be related to that patch.  But, I had already tried uninstalling the patch from one of the affected machines, and
+it didn't fix the issue.  So what gives?
+
+Turns out the [process for patching](https://blogs.msdn.microsoft.com/dotnet/2016/10/11/net-framework-monthly-rollups-explained/)
+.NET is a bit complex.  There are really several different versions of .NET being maintained concurrently (3.5, 4.5.2, 4.6, 4.6.1, 4.6.2, Core, etc).
+Whenever a security vulnerabilty is discovered, a patch has to be released for _all_ supported versions of .NET that are impacted.
+So a particular vulnerability may be addressed by a half dozen different patches, each targeting different versions of
+Windows/.NET.  I eventually found my way to the [security bulletin](https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/CVE-2017-0248)
+Microsoft had published for this vulnerability.  That was the final piece of the puzzle I needed to start addressing this issue.
+
+### Success! Kind of...
+So I finally had a solid explanation for what was going on here.
+Microsoft had released a security patch that required a couple
+OID lookups.  These lookups would execute against the domain controller when the machine was part of a domain, which sometimes could
+take a long time complete, preventing SSL/TLS connections from being established.
+
+I also had a potential workaround, remove the KB identified in the security bulletin from Microsoft for the Windows/.NET version
+installed on the client's machine.  Before attempting this on a client's machine, I wanted to verify this would work as expected
+on my own machine.  I figured I could decompile the System.dll I had installed before and after removing the patch.  If I could
+see the OID lookups go away, I could be confident this would fix our issue.
+
+Windows does not make it easy to get to the .NET assemblies installed on your machine.  You can find them at
+`C:\Windows\assembly`, but Windows will by default get you a special view of this directory, preventing you
+from seeing the actual files.  One way around this is to map a drive to this folder.  This will prevent Windows
+from hiding the real file system structure from you.
+
+```csharp
+SUBST Z: C:\Windows\assembly
+```
+
+Now I could get to my System.dll at `Z:\NativeImages_v4.0.30319_64\System`.
 
