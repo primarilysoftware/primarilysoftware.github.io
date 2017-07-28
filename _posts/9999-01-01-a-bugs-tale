@@ -367,10 +367,10 @@ take a long time complete, preventing SSL/TLS connections from being established
 I also had a potential workaround, remove the KB identified in the security bulletin from Microsoft for the Windows/.NET version
 installed on the client's machine.  Before attempting this on a client's machine, I wanted to verify this would work as expected
 on my own machine.  I figured I could decompile the System.dll I had installed before and after removing the patch.  If I could
-see the OID lookups go away, I could be confident this would fix our issue.
+see the OID lookups go away, I could feel confident this would fix our issue.
 
 Windows does not make it easy to get to the .NET assemblies installed on your machine.  You can find them at
-`C:\Windows\assembly`, but Windows will by default get you a special view of this directory, preventing you
+`C:\Windows\assembly`, but Windows will by default give you a special view of this directory, preventing you
 from seeing the actual files.  One way around this is to map a drive to this folder.  This will prevent Windows
 from hiding the real file system structure from you.
 
@@ -378,5 +378,19 @@ from hiding the real file system structure from you.
 SUBST Z: C:\Windows\assembly
 ```
 
-Now I could get to my System.dll at `Z:\NativeImages_v4.0.30319_64\System`.
+Now I could get to my System.dll at `Z:\NativeImages_v4.0.30319_64\System` and decompile it.  Here is
+the `SecureChannel` class before uninstalling the patch:
+
+![before uninstalling patch]()
+
+And here is the same section of code after uninstalling the patch:
+
+![after uninstalling patch]()
+
+That was all I needed to see.  I armed our support team with the security bulletin, and had them start reaching
+out to customers that had been having issues to try uninstalling the troublesome patch.  It wasn't long before
+we got confirmation that this did in fact fix the issues the clients were seeing, and I could finally breath
+a sigh of relief.
+
+### 
 
