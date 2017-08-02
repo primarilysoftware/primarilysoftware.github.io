@@ -45,8 +45,8 @@ have been a portion of a longer timeout.
 This wasn't much to go on.  There was no reason for this request to be timing out.  The vast majority of our clients were
 able to connect to the service just fine.  I trolled through our server side logs, and couldn't find any evidence that the request was
 ever making it to our servers.  OK, so the the request must be getting dropped somewhere along the way.  It is not unheard of for an
-antivirus to drop requests like this, so we explored that avenue some more.  We went as far as temporarily disabling antivirus,
-but to no avail.
+antivirus or firewall to drop requests like this, so we explored that avenue some more.  We went as far as temporarily disabling the antivirus/firewall
+on one of the affected machines, but to no avail.
 
 I needed more information.  We were able to get System.Net trace logs and a Wireshark trace.  The System.Net trace showed
 a different error:
@@ -214,7 +214,6 @@ public class MyTlsAuthentication : TlsAuthentication
 With that out of the way, I could attempt the service call as follows:
 
 ```csharp
-
 using (var tcpClient = new TcpClient("our.domain.name", 443))
 {
     var handler = new TlsClientProtocol(tcpClient.GetStream(), SecureRandom.GetInstance("SHA1PRNG"));
@@ -250,7 +249,7 @@ I had a good idea where my problem was, the `AuthenticateAsClient` method, so I 
 (implementation for that method)[http://referencesource.microsoft.com/#System/net/System/Net/SecureProtocols/SslStream.cs,e34758c5b3de83df]
 and starting walking through the code.  Nothing really jumped out at me.  I saw some initialization code around
 standing up a `SecureChannel` instance.  I was starting to make some connections though between what I had seen in the
-System.Net trace logs, and what I was seeing in the source code.  Here are 2 consecutive log entries from that log file:
+System.Net trace logs, and what I was seeing in the source code.  Here are 2 consecutive log entries from System.Net trace log:
 
 ```csharp
 System.Net Information: 0 : [4436] ConnectStream#21800467 - Sending headers
@@ -274,7 +273,7 @@ Notice that 30 seconds pass between opening the stream, and when the `SecureChan
 see that log line is the first line in the body of the constructor.  This must mean the issue is occurring somewhere
 between the start of the `AuthenticateAsClient` method, and when the `SecureChannel` constructor was being invoked, right?
 I certainly thought so.  I spent far more time that I would like to admit scrutinizing every single one of those 45 or so
-lines of code.  I just couldn't find anything to explain what I was seeing.
+lines of code.  I just couldn't find anything to explain where the 30 seconds was being spent.
 
 ### Digging Deeper
 ![we need to go deeper]()
@@ -392,5 +391,13 @@ out to customers that had been having issues to try uninstalling the troublesome
 we got confirmation that this did in fact fix the issues the clients were seeing, and I could finally breath
 a sigh of relief.
 
-### 
+There was a big BUT with this workaround though.  We were getting ourseleves into the business of uninstalling
+security patches from client machines, not ideal.  Further, any future patches to the same DLL would also include
+this fix.  And even more problematic, .NET 4.7 had just shipped with this change included, so there is no patch
+to uninstall.  You have to go back to a previous version of .NET.  We needed to come up with a more permanent
+solution.
+
+### Open Source FTW
+Remember when I said Microsoft &hearts; open source.  I really meant it.  Not only is all of the code for .NET
+available, but for .NET core, the entire development process runs through github.  Issues, pull requests, ever
 
