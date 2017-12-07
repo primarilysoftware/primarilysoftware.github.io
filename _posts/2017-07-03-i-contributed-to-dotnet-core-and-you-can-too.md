@@ -24,7 +24,7 @@ not seem to fit with the open source community.
 But domino after domino has fallen.  From Node.js support in Windows, to open sourcing ASP.NET MVC, then all of
 .NET, and even migrating to GitHub, the software development world we now live in feels very different than the
 one I started in.  Something happened recently that really drove this change home for me.  I submitted
-a pull request to the dotnet/corefx repo on GitHub.
+a pull request to the [dotnet/corefx repo on GitHub](https://github.com/dotnet/corefx).
 
 ### It started with a bug
 It's a long story (one that I hope to tell in a future post).  The short version is we started getting reports of
