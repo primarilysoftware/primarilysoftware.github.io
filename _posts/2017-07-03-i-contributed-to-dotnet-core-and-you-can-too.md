@@ -5,6 +5,7 @@ comments: true
 description: "A short post about how easy it was to contribute a pull request to .NET core"
 keywords: ".net, dotnet, core, open source, contribute"
 ---
+
 My first job out of college was working as a .NET developer, and I have continued to work
 with .NET ever since, going on 7 years.  While I wasn't around for the dark ages of .NET 1.0 or 1.1 (can you
 imagine a world without generics or iterators?), I have been around long enough to see quite a bit evolve.  From
