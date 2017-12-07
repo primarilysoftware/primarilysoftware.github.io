@@ -6,7 +6,7 @@ description: "A brief exploration of the various ways to implement value objects
 keywords: "code snippet, il weaving, aop, value object, ddd, c#, visual studio, .net"
 ---
 
-Value objects are a good thing.  I find myself using them more and more to harden the code I write, moving away from Primitive Obsession.  The value of Value Objects has already been covered quite thoroughly by much more [credible](https://lostechies.com/jimmybogard/2007/12/03/dealing-with-primitive-obsession/) [sources](http://blog.ploeh.dk/2011/05/25/DesignSmellPrimitiveObsession/) [than myself](http://enterprisecraftsmanship.com/2015/03/07/functional-c-primitive-obsession/), so I do not feel the need to expand on why you may want to use Value Objects.
+Value objects are a good thing.  I find myself using them more and more to harden the code I write, moving away from Primitive Obsession.  The value of Value Objects has already been covered quite thoroughly by much more [credible](https://lostechies.com/jimmybogard/2007/12/03/dealing-with-primitive-obsession/) [sources](http://blog.ploeh.dk/2011/05/25/DesignSmellPrimitiveObsession/) [than myself](http://enterprisecraftsmanship.com/2015/03/07/functional-c-primitive-obsession/), so I do not feel the need to expand on why you may want to use them.
 
 What I do want to share are a few ways to make using Value Objects a little less painful in C# (at least until we get [record types](https://github.com/dotnet/csharplang/blob/master/proposals/records.md)).
 
