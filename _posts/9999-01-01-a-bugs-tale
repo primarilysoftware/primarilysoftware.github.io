@@ -43,10 +43,10 @@ have been a portion of a longer timeout.
 ```
 
 This wasn't much to go on.  There was no reason for this request to be timing out.  The vast majority of our clients were
-able to connect to the service just fine.  I trolled through our server side logs, and couldn't find any evidence that the request was
-ever making it to our servers.  OK, so the the request must be getting dropped somewhere along the way.  It is not unheard of for an
-antivirus or firewall to drop requests like this, so we explored that avenue some more.  We went as far as temporarily disabling the antivirus/firewall
-on one of the affected machines, but to no avail.
+able to connect to the service just fine.  I trolled through our server side logs, and couldn't find any evidence that the
+requests  from affected clients were ever making it to our servers.  OK, so the the request must be getting dropped
+somewhere along the way.  It is not unheard of for an antivirus or firewall to drop requests like this, so we explored that
+avenue some more.  We went as far as temporarily disabling the antivirus/firewall on one of the affected machines, but to no avail.
 
 I needed more information.  We were able to get System.Net trace logs and a Wireshark trace.  The System.Net trace showed
 a different error:
@@ -109,7 +109,7 @@ console app that attempted a series of WCF calls, switching from SSL 3.0, to TLS
 As I was putting together this test app, I started to develop another theory.  Our WCF service was configured to use `msbin` for the 
 message encoding.  Maybe these clients had a firewall that was doing deep packet inspection (DPI), and was dropping these
 packets because of the binary data?  I decided to test that theory out as well.  I exposed a plain XML endpoint for our
-service, and added a second series of calls to the test app that went to this new XML endpoint, still cycling through all the 
+service, and added a second series of calls to the test app that went to this new XML endpoint, again cycling through all the 
 different SSL/TLS protocols.
 
 We got a chance to try this test app out on one of the affected machines, and lo and behold!  None of the calls worked...
@@ -342,7 +342,9 @@ System.Net Information: 0 : [4436] SecureChannel#61986480::.ctor(hostname=fulfil
 
 I had assumed that since the long pause came before the `SecureChannel#` log line, the issue was occurring prior to the `SecureChannel`
 constructor being invoked.  The devil is always in the details.  In C#, instance fields are initialized before the contructor body
-executes.  In this case, `m_ServerAuthOid` and `m_ClientAuthOid` were being intialized, triggering the call to `CryptFindOIDInfo`.
+executes.  In this case, `m_ServerAuthOid` and `m_ClientAuthOid` were being intialized, triggering the call to `CryptFindOIDInfo`.  On
+clients with a misconfigured domain controller, this call was timing out, leading to a slow yet emphatic boom in our app.  Hallelujah!
+I finally had a solid explanation for what was going on!
 
 So why was this just now becoming an issue?  Well, remember that patch from before,
 [KB4014504](https://support.microsoft.com/en-us/help/4014504/description-of-the-security-and-quality-rollup-for-the-net-framework-3)?
@@ -391,13 +393,47 @@ out to customers that had been having issues to try uninstalling the troublesome
 we got confirmation that this did in fact fix the issues the clients were seeing, and I could finally breath
 a sigh of relief.
 
-There was a big BUT with this workaround though.  We were getting ourseleves into the business of uninstalling
-security patches from client machines, not ideal.  Further, any future patches to the same DLL would also include
+### A happy ending, mostly
+There was a big BUT with this workaround.  We were getting ourseleves into the business of uninstalling
+security patches from client machines.  Not ideal.  Further, any future patches to the same DLL would also include
 this fix.  And even more problematic, .NET 4.7 had just shipped with this change included, so there is no patch
 to uninstall.  You have to go back to a previous version of .NET.  We needed to come up with a more permanent
 solution.
 
-### Open Source FTW
+_Open Source FTW_
+
 Remember when I said Microsoft &hearts; open source.  I really meant it.  Not only is all of the code for .NET
-available, but for .NET core, the entire development process runs through github.  Issues, pull requests, ever
+available, but for .NET core, the entire development process runs through github.  Issues, pull requests, everything.
+Little did I know how deeply Microsoft had really bought into this movement.
+
+I had started by opening an (issue on the connect website)[https://connect.microsoft.com/VisualStudio/feedback/details/3136313/unable-to-make-wcf-calls-after-kb4014511-from-certain-clients].
+That didn't get me anywhere.  My employer provides MSDN subscriptions for all developers, and it turns out that you get
+a couple of free support cases included with that, so I went ahead and opened a ticket through that channel as well.  In the
+mean time, since I knew the exact line of code where this problem was introduced, I went ahead and submitted a (pull request
+to the dotnet/corefx repo on GitHub)[https://github.com/dotnet/corefx/pull/21320].
+
+To my suprise, within a couple of hours, one of the core contributors to the corefx repo had reviewed my pull request
+and replied!  I was stunned.  A few people got involved to review the case, suggested changes, and before you know it
+the PR was accepted.
+
+> To be fair, the MSDN support was very good as well.  A support rep did reach out to me and stayed
+> in contact all the way through until the official fix was released.
+
+So, after all that, I had found the bug, discovered a workaround, and even helped with contributing a fix.  There are a
+couple of things I can take away from this whole endeavor:
+1. Software is rarely a black box.  I have long admired Scott Hanselmann.  Many moons ago, he gave (a talk about ASP.NET MVC 2)[https://channel9.msdn.com/Blogs/matthijs/ASPNET-MVC-2-Basics-Introduction-by-Scott-Hanselman].
+Ok, its 2017, why would I share a link about ASP.NET MVC 2?  Well starting around the 11 minute mark of that talk, he
+shares some really brilliant insights about how digging a little deeper into a call stack can really broaden your understanding
+of a system.  Parts that at first glance are "indistinguishable from magic", can actually be explained and reasoned about.  I highly
+recommend watching that video, not for the MVC bits, but how he demonstrates how to walk through a stack trace to peek inside
+these libraries that we tend to view of as block boxes.  This is something that really stuck with me as a young developer, and
+something that I have carried with me to this day.  This particular bug is just another reminder of how powerful Scott's notion of
+taking one more step down the call stack is.  Prior to working this bug, SSL/TLS was mostly magic to me.  I was aware that
+there were a variety of different protocols, and trusted that some smart people kept these things secure.  In my .NET apps,
+I just give an https URL to a WCF configuration, or `WebClient`, and magic happens.  Having gone through this ordeal, I have
+a new appreciation for how all the pieces to a secure TCP connection come together.
+2. Open source software is awesome.  I have long used many different open source projects, but this incident has given me a
+new found appreciation for the whole open source movement.  I love that Microsoft and .NET are now on board, and cannot wait
+to see where this new path leads.
+
 
