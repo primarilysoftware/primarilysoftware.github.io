@@ -5,6 +5,7 @@ comments: true
 description: "The story of one particularly interesting bug"
 keywords: ".net, dotnet, wcf, bug"
 ---
+
 Working in a production support role can take you on some wild rides.  At times, hunting down the source of a bug can make
 you want to rip out your hair, and even question your sanity.  Quite often though, the harder you work to
 unravel a problem, the sweeter the satisfaction when you finally get to the bottom of it.  This is the story of one of those
