@@ -239,15 +239,15 @@ what was causing this problem.
 
 Once upon a time, there lived an evil king who ruled upon a throne of prioprietary software and anti-competitive practices...
 
-That was a long time ago though.  The king has since left (off trying to (rid the world of malaria)[https://www.gatesfoundation.org/]
+That was a long time ago though.  The king has since left (off trying to [rid the world of malaria](https://www.gatesfoundation.org/)
 and what not), and the kingdom he left behind has transformed into something few people could have imagined.
 
 Microsoft &hearts; Open Source.
 
-For real, you can go browse the (full source code)[http://referencesource.microsoft.com/] to the .NET Framework right now.
+For real, you can go browse the [full source code](http://referencesource.microsoft.com/) to the .NET Framework right now.
 
 I had a good idea where my problem was, the `AuthenticateAsClient` method, so I looked up the 
-(implementation for that method)[http://referencesource.microsoft.com/#System/net/System/Net/SecureProtocols/SslStream.cs,e34758c5b3de83df]
+[implementation for that method](http://referencesource.microsoft.com/#System/net/System/Net/SecureProtocols/SslStream.cs,e34758c5b3de83df)
 and starting walking through the code.  Nothing really jumped out at me.  I saw some initialization code around
 standing up a `SecureChannel` instance.  I was starting to make some connections though between what I had seen in the
 System.Net trace logs, and what I was seeing in the source code.  Here are 2 consecutive log entries from System.Net trace log:
@@ -270,7 +270,7 @@ System.Net Information: 0 : [4436] SecureChannel#61986480::.ctor(hostname=fulfil
 ```
 
 Notice that 30 seconds pass between opening the stream, and when the `SecureChannel` constructor is invoked.  From the
-(source code)[http://referencesource.microsoft.com/#System/net/System/Net/_SecureChannel.cs,c597b80ee5e0e08b], I could
+[source code](http://referencesource.microsoft.com/#System/net/System/Net/_SecureChannel.cs,c597b80ee5e0e08b), I could
 see that log line is the first line in the body of the constructor.  This must mean the issue is occurring somewhere
 between the start of the `AuthenticateAsClient` method, and when the `SecureChannel` constructor was being invoked, right?
 I certainly thought so.  I spent far more time that I would like to admit scrutinizing every single one of those 45 or so
@@ -289,7 +289,7 @@ API Monitor trace, trying to hone in on any system calls being made during the l
 were thousands of calls logged during that time, too many for me to make sense of.  I then started playing around with the
 filters in API Monitor, eventually arriving at a filter to only show calls taking more than 1 second:
 
-[API Monitor trace](https://primarilysoftware.github.io/downloads/2017-08-07-a-bugs-tale/apimonitor.png)
+![API Monitor trace](https://primarilysoftware.github.io/downloads/2017-08-07-a-bugs-tale/apimonitor.png)
 
 I had found a smoking gun!  One system call was consistently taking ~15 seconds to complete, `CryptFindOIDInfo`.  I reviewed
 [the docs](https://msdn.microsoft.com/en-us/library/windows/desktop/aa379938(v=vs.85).aspx) for this API to get a better idea
@@ -407,11 +407,11 @@ Remember when I said Microsoft &hearts; open source.  I really meant it.  Not on
 available, but for .NET core, the entire development process runs through github.  Issues, pull requests, everything.
 Little did I know how deeply Microsoft had really bought into this movement.
 
-I had started by opening an (issue on the connect website)[https://connect.microsoft.com/VisualStudio/feedback/details/3136313/unable-to-make-wcf-calls-after-kb4014511-from-certain-clients].
+I had started by opening an {issue on the connect website}(https://connect.microsoft.com/VisualStudio/feedback/details/3136313/unable-to-make-wcf-calls-after-kb4014511-from-certain-clients).
 That didn't get me anywhere.  My employer provides MSDN subscriptions for all developers, and it turns out that you get
 a couple of free support cases included with that, so I went ahead and opened a ticket through that channel as well.  In the
-mean time, since I knew the exact line of code where this problem was introduced, I went ahead and submitted a (pull request
-to the dotnet/corefx repo on GitHub)[https://github.com/dotnet/corefx/pull/21320].
+mean time, since I knew the exact line of code where this problem was introduced, I went ahead and submitted a [pull request
+to the dotnet/corefx repo on GitHub](https://github.com/dotnet/corefx/pull/21320).
 
 To my suprise, within a couple of hours, one of the core contributors to the corefx repo had reviewed my pull request
 and replied!  I was stunned.  A few people got involved to review the case, suggested changes, and before you know it
@@ -422,7 +422,7 @@ the PR was accepted.
 
 So, after all that, I had found the bug, discovered a workaround, and even helped with contributing a fix.  There are a
 couple of things I can take away from this whole endeavor:
-1. Software is rarely a black box.  I have long admired Scott Hanselmann.  Many moons ago, he gave (a talk about ASP.NET MVC 2)[https://channel9.msdn.com/Blogs/matthijs/ASPNET-MVC-2-Basics-Introduction-by-Scott-Hanselman].
+1. Software is rarely a black box.  I have long admired Scott Hanselmann.  Many moons ago, he gave [a talk about ASP.NET MVC 2](https://channel9.msdn.com/Blogs/matthijs/ASPNET-MVC-2-Basics-Introduction-by-Scott-Hanselman).
 Ok, its 2017, why would I share a link about ASP.NET MVC 2?  Well starting around the 11 minute mark of that talk, he
 shares some really brilliant insights about how digging a little deeper into a call stack can really broaden your understanding
 of a system.  Parts that at first glance are "indistinguishable from magic", can actually be explained and reasoned about.  I highly
