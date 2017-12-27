@@ -387,7 +387,7 @@ the `SecureChannel` class before uninstalling the patch:
 
 And here is the same section of code after uninstalling the patch:
 
-![after uninstalling patch](https://primarilysoftware.github.io/downloads/2017-08-07-a-bugs-tale/afteruninstall.PNG)
+![after uninstalling patch](https://primarilysoftware.github.io/downloads/2017-08-07-a-bugs-tale/afteruninstall.png)
 
 That was all I needed to see.  I armed our support team with the security bulletin, and had them start reaching
 out to customers that had been having issues to try uninstalling the troublesome patch.  It wasn't long before
