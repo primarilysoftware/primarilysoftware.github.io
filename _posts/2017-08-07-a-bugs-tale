@@ -179,7 +179,7 @@ We tried this out on one of the affected machines, and again it didn't work.  So
 the WCF stack.  The call to `AuthenticateAsClient` was taking 30 seconds.  This lined up with what we were seeing in
 the WireShark trace.  The TCP connection was opened successfully, but the SSL/TLS handshake was getting hung up.  Something
 was going wrong in that `AuthenticateAsClient` call.  I started to look for alternative SSL/TLS implementations for .NET,
-thinking this could be a bug somewhere in the BCL.  This led me to the (Bouncy Castle library)[http://www.bouncycastle.org/csharp/].
+thinking this could be a bug somewhere in the BCL.  This led me to the [Bouncy Castle library](http://www.bouncycastle.org/csharp/).
 I updated the test app I had written, adding some code to attempt calling our service using the Bouncy Castle APIs.  There
 were a couple of hoops to jump through.  I needed to provide an implementation for the `DefaultTlsClient` and 
 `TlsAuthentication` classes, but it wasn't too painful:
