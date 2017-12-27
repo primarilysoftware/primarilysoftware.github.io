@@ -1,23 +1,9 @@
 ---
 layout: post
-title: "A Bug's Tale"
+title: "C# Value Objects, Let Me Count the Ways"
 comments: true
-description: "The story of one particularly interesting bug"
-keywords: ".net, dotnet, wcf, bug"
+description: "A brief exploration of the various ways to implement value objects in C#"
+keywords: "code snippet, il weaving, aop, value object, ddd, c#, visual studio, .net"
 ---
 
-Working in a production support role can take you on some wild rides.  At times, hunting down the source of a bug can make
-you want to rip out your hair, and even question your sanity.  Quite often though, the harder you work to
-unravel a problem, the sweeter the satisfaction when you finally get to the bottom of it.  This is the story of one of those
-kind of bugs.  While it may have cost me a few hair folicles, the payoff at the end was worth it. 
-
-### How it all started
-I work for a fairly small software development shop.  We support a handful of different products, including
-a desktop app that uses WCF to call back home to one of our services.  Out of the blue, we got a report from a user
-saying they were getting timeout errors in the desktop software related to some functions that called back to 
-our WCF service.  Initially, our support team thought this must be a fluke.  If our service was down, we would have
-been flooded with calls.  This was just a single desktop, in an office with several installations.  Being desktop
-software, support frequently gets calls from users blaming our software for any and every PC related problem they 
-may have.  We hadn't released any updates to this part of the app for months, so support felt pretty confident that
-this was not really our problem.
-
+Value objects are a good thing.  I find myself using them more and more to harden the code I write, moving away from Primitive Obsession.  The value of Value Objects has already been covered quite thoroughly by much more [credible](https://lostechies.com/jimmybogard/2007/12/03/dealing-with-primitive-obsession/) [sources](http://blog.ploeh.dk/2011/05/25/DesignSmellPrimitiveObsession/) [than myself](http://enterprisecraftsmanship.com/2015/03/07/functional-c-primitive-obsession/), so I do not feel the need to expand on why you may want to use them.
