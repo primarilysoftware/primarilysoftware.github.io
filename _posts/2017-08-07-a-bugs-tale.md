@@ -32,7 +32,7 @@ Unfortunately, our expert in this area was gone.  He had moved on to another com
 about this particular area of the code in the desktop app, certainly not me.  I happened to work on the service this code was
 calling back to, so naturally, I became the reluctant heir to this problem.
 
-###Digging In
+### Digging In
 I have worked with WCF enough to know she can be a fickle mistress.  My first thought was some configuration issue.
 That led no where.  I have also known WCF to bury the real error message, so switched on trace logging.  Still not much helpful.
 The only error in the WCF trace log was:
