@@ -281,7 +281,7 @@ lines of code.  I just couldn't find anything to explain where the 30 seconds wa
 
 I was starting to wonder, what if this is not a .NET problem?  What if it goes deeper than that?  Could there be a problem
 with some system call that .NET was making?  It seemed very unlikely, but I didn't know what else to look for.  I found an
-awesome tool called (API Monitor)[http://www.rohitab.com/apimonitor] that logs Windows API calls that your application 
+awesome tool called [API Monitor](http://www.rohitab.com/apimonitor) that logs Windows API calls that your application 
 makes.  We once again got on one of these client's machines (this was getting embarassing at this point) so that we could
 grab an API Monitor trace while the test app I had written was running.  API Monitor collects _a lot_ of data.  It took me 
 some time to dig through all of it.  I started off by correlating timestamps between the System.Net trace log, and the
