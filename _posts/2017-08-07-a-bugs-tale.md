@@ -289,7 +289,7 @@ API Monitor trace, trying to hone in on any system calls being made during the l
 were thousands of calls logged during that time, too many for me to make sense of.  I then started playing around with the
 filters in API Monitor, eventually arriving at a filter to only show calls taking more than 1 second:
 
-![API Monitor trace](https://primarilysoftware.github.io/downloads/2017-08-07-a-bugs-tale/apimonitor.png)
+![API Monitor trace](https://primarilysoftware.github.io/downloads/2017-08-07-a-bugs-tale/apimonitor.PNG)
 
 I had found a smoking gun!  One system call was consistently taking ~15 seconds to complete, `CryptFindOIDInfo`.  I reviewed
 [the docs](https://msdn.microsoft.com/en-us/library/windows/desktop/aa379938(v=vs.85).aspx) for this API to get a better idea
