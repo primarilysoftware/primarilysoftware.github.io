@@ -252,7 +252,7 @@ and starting walking through the code.  Nothing really jumped out at me.  I saw 
 standing up a `SecureChannel` instance.  I was starting to make some connections though between what I had seen in the
 System.Net trace logs, and what I was seeing in the source code.  Here are 2 consecutive log entries from System.Net trace log:
 
-```csharp
+```
 System.Net Information: 0 : [4436] ConnectStream#21800467 - Sending headers
 {
 Content-Type: application/soap+msbin1
@@ -264,6 +264,9 @@ Connection: Keep-Alive
 }.
     ProcessId=3020
     DateTime=2017-06-05T21:43:54.3987861Z
+```
+
+```
 System.Net Information: 0 : [4436] SecureChannel#61986480::.ctor(hostname=fulfillment.creditinfonet.com, #clientCertificates=0, encryptionPolicy=RequireEncryption)
     ProcessId=3020
     DateTime=2017-06-05T21:44:24.4028294Z
