@@ -395,7 +395,8 @@ we got confirmation that this did in fact fix the issues the clients were seeing
 a sigh of relief.
 
 ### A happy ending, mostly
-There was a big BUT with this workaround.  We were getting ourseleves into the business of uninstalling
+I could finally breath a sigh of relief, for a moment.  There was a big BUT with this workaround.  We were getting
+ourseleves into the business of uninstalling 
 security patches from client machines.  Not ideal.  Further, any future patches to the same DLL would also include
 this fix.  And even more problematic, .NET 4.7 had just shipped with this change included, so there is no patch
 to uninstall.  You have to go back to a previous version of .NET.  We needed to come up with a more permanent
