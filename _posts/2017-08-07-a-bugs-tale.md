@@ -411,7 +411,7 @@ Remember when I said Microsoft &hearts; open source.  I really meant it.  Not on
 available, but for .NET core, the entire development process runs through github.  Issues, pull requests, everything.
 Little did I know how deeply Microsoft had really bought into this movement.
 
-I had started by opening an {issue on the connect website}(https://connect.microsoft.com/VisualStudio/feedback/details/3136313/unable-to-make-wcf-calls-after-kb4014511-from-certain-clients).
+I knew I would need to get Microsoft involved to get this fixed, so I had started by opening an [issue on the connect website](https://connect.microsoft.com/VisualStudio/feedback/details/3136313/unable-to-make-wcf-calls-after-kb4014511-from-certain-clients).
 That didn't get me anywhere.  My employer provides MSDN subscriptions for all developers, and it turns out that you get
 a couple of free support cases included with that, so I went ahead and opened a ticket through that channel as well.  In the
 mean time, since I knew the exact line of code where this problem was introduced, I went ahead and submitted a [pull request
