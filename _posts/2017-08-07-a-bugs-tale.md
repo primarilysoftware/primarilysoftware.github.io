@@ -383,11 +383,11 @@ SUBST Z: C:\Windows\assembly
 Now I could get to my System.dll at `Z:\NativeImages_v4.0.30319_64\System` and decompile it.  Here is
 the `SecureChannel` class before uninstalling the patch:
 
-![before uninstalling patch](https://primarilysoftware.github.io/downloads/2017-08-07-a-bugs-tale/before.PNG)
+![before uninstalling patch](https://primarilysoftware.github.io/downloads/2017-08-07-a-bugs-tale/beforeuninstall.PNG)
 
 And here is the same section of code after uninstalling the patch:
 
-![after uninstalling patch](https://primarilysoftware.github.io/downloads/2017-08-07-a-bugs-tale/after.PNG)
+![after uninstalling patch](https://primarilysoftware.github.io/downloads/2017-08-07-a-bugs-tale/afteruninstall.PNG)
 
 That was all I needed to see.  I armed our support team with the security bulletin, and had them start reaching
 out to customers that had been having issues to try uninstalling the troublesome patch.  It wasn't long before
