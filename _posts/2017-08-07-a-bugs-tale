@@ -57,7 +57,7 @@ System.Net.Sockets Error: 0 : [1916] Exception in Socket#45648486::Send - An exi
 
 So why was the connection getting reset?  The Wireshark trace showed something interesting:
 
-![Wireshark trace]()
+![Wireshark trace](https://primarilysoftware.github.io/downloads/2017-08-07-a-bugs-tale/wireshark.png)
 
 The TCP connection was being opened, then nothing.  10 seconds of nothing.  And then the connection was reset by the server.
 Since the client is connecting over https, you would expect to see the SSL/TLS handshake start immediately after establishing
@@ -234,7 +234,7 @@ they were paying for.  So, while I felt like I had made some progress, I still h
 what was causing this problem.
 
 ### Read the Source
-![read the source, Luke]()
+![read the source, Luke](https://primarilysoftware.github.io/downloads/2017-08-07-a-bugs-tale/readthesource.jpg)
 
 Once upon a time, there lived an evil king who ruled upon a throne of prioprietary software and anti-competitive practices...
 
@@ -276,7 +276,7 @@ I certainly thought so.  I spent far more time that I would like to admit scruti
 lines of code.  I just couldn't find anything to explain where the 30 seconds was being spent.
 
 ### Digging Deeper
-![we need to go deeper]()
+![we need to go deeper](https://primarilysoftware.github.io/downloads/2017-08-07-a-bugs-tale/weneedtogodeeper.jpg)
 
 I was starting to wonder, what if this is not a .NET problem?  What if it goes deeper than that?  Could there be a problem
 with some system call that .NET was making?  It seemed very unlikely, but I didn't know what else to look for.  I found an
@@ -288,7 +288,7 @@ API Monitor trace, trying to hone in on any system calls being made during the l
 were thousands of calls logged during that time, too many for me to make sense of.  I then started playing around with the
 filters in API Monitor, eventually arriving at a filter to only show calls taking more than 1 second:
 
-[API Monitor trace]()
+[API Monitor trace](https://primarilysoftware.github.io/downloads/2017-08-07-a-bugs-tale/apimonitor.png)
 
 I had found a smoking gun!  One system call was consistently taking ~15 seconds to complete, `CryptFindOIDInfo`.  I reviewed
 [the docs](https://msdn.microsoft.com/en-us/library/windows/desktop/aa379938(v=vs.85).aspx) for this API to get a better idea
