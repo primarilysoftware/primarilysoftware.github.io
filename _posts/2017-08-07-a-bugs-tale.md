@@ -369,7 +369,7 @@ Microsoft had released a security patch that required a couple
 OID lookups.  These lookups would execute against the domain controller when the machine was part of a domain, which sometimes could
 take a long time complete, preventing SSL/TLS connections from being established.
 
-I also had a potential workaround, remove the KB identified in the security bulletin from Microsoft for the Windows/.NET version
+I also had a potential workaround: remove the KB identified in the security bulletin from Microsoft for the Windows/.NET version
 installed on the client's machine.  Before attempting this on a client's machine, I wanted to verify this would work as expected
 on my own machine.  I figured I could decompile the System.dll I had installed before and after removing the patch.  If I could
 see the OID lookups go away, I could feel confident this would fix our issue.
@@ -397,18 +397,18 @@ out to customers that had been having issues to try uninstalling the troublesome
 we got confirmation that this did in fact fix the issues the clients were seeing, and I could finally breath
 a sigh of relief.
 
-### A happy ending, mostly
-I could finally breath a sigh of relief, for a moment.  There was a big BUT with this workaround.  We were getting
+### A happy ending, almost
+That sigh of relief was oh so satisfying, but short lived.  There was a big BUT with this workaround.  We were getting
 ourseleves into the business of uninstalling 
 security patches from client machines.  Not ideal.  Further, any future patches to the same DLL would also include
 this fix.  And even more problematic, .NET 4.7 had just shipped with this change included, so there is no patch
-to uninstall.  You have to go back to a previous version of .NET.  We needed to come up with a more permanent
+to uninstall.  You have to go back to a previous version of .NET.  I needed to come up with a more permanent
 solution.
 
 _Open Source FTW_
 
-Remember when I said Microsoft &hearts; open source.  I really meant it.  Not only is all of the code for .NET
-available, but for .NET core, the entire development process runs through github.  Issues, pull requests, everything.
+Remember when I said Microsoft &hearts; open source.  I really meant it.  Not only is all of the source code for .NET
+available, but for .NET core, the entire development process runs through GitHub.  Issues, pull requests, everything.
 Little did I know how deeply Microsoft had really bought into this movement.
 
 I knew I would need to get Microsoft involved to get this fixed, so I had started by opening an [issue on the connect website](https://connect.microsoft.com/VisualStudio/feedback/details/3136313/unable-to-make-wcf-calls-after-kb4014511-from-certain-clients).
@@ -418,27 +418,12 @@ mean time, since I knew the exact line of code where this problem was introduced
 to the dotnet/corefx repo on GitHub](https://github.com/dotnet/corefx/pull/21320).
 
 To my suprise, within a couple of hours, one of the core contributors to the corefx repo had reviewed my pull request
-and replied!  I was stunned.  A few people got involved to review the case, suggested changes, and before you know it
-the PR was accepted.
+and replied!  I was stunned.  A few people got involved to review the case, suggested changes, and over the course of
+a few days, the PR was accepted.
 
 > To be fair, the MSDN support was very good as well.  A support rep did reach out to me and stayed
 > in contact all the way through until the official fix was released.
 
-So, after all that, I had found the bug, discovered a workaround, and even helped with contributing a fix.  There are a
-couple of things I can take away from this whole endeavor:
-1. Software is rarely a black box.  I have long admired Scott Hanselmann.  Many moons ago, he gave [a talk about ASP.NET MVC 2](https://channel9.msdn.com/Blogs/matthijs/ASPNET-MVC-2-Basics-Introduction-by-Scott-Hanselman).
-Ok, its 2017, why would I share a link about ASP.NET MVC 2?  Well starting around the 11 minute mark of that talk, he
-shares some really brilliant insights about how digging a little deeper into a call stack can really broaden your understanding
-of a system.  Parts that at first glance are "indistinguishable from magic", can actually be explained and reasoned about.  I highly
-recommend watching that video, not for the MVC bits, but how he demonstrates how to walk through a stack trace to peek inside
-these libraries that we tend to view of as block boxes.  This is something that really stuck with me as a young developer, and
-something that I have carried with me to this day.  This particular bug is just another reminder of how powerful Scott's notion of
-taking one more step down the call stack is.  Prior to working this bug, SSL/TLS was mostly magic to me.  I was aware that
-there were a variety of different protocols, and trusted that some smart people kept these things secure.  In my .NET apps,
-I just give an https URL to a WCF configuration, or `WebClient`, and magic happens.  Having gone through this ordeal, I have
-a new appreciation for how all the pieces to a secure TCP connection come together.
-2. Open source software is awesome.  I have long used many different open source projects, but this incident has given me a
-new found appreciation for the whole open source movement.  I love that Microsoft and .NET are now on board, and cannot wait
-to see where this new path leads.
-
-
+So, after all that, I had found the bug, discovered a workaround, and even helped with contributing a fix.  It had been a long
+and difficult road, but along the way I had learned quite a bit, and can even now call my self a contributor to the
+.NET framework.  Not too shabby.
