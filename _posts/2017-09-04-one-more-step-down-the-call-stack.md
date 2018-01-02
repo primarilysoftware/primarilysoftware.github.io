@@ -6,7 +6,7 @@ description: "Taking one more step down the call stack can make all the differen
 keywords: "general, software development, tips"
 ---
 
-![It doesn't work.  I don't know why...](https://primarilysoftware.github.io/downloads/2017-09-04-one-more-step-down-the-call-stack/it-doesnt-work-i-dont-know-why.png)
+![It doesn't work.  I don't know why...](https://primarilysoftware.github.io/downloads/2017-09-04-one-more-step-down-the-call-stack/it-doesnt-work-I-dont-know-why.png)
 [Source](https://neoteric.eu/what-do-programmers-hate)
 
 Software is rarely a black box.  It can be easy to forget that though.  Modern software development involves so many libraries
