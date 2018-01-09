@@ -1,0 +1,40 @@
+---
+layout: post
+title: "So you want to build a Bridge.NET plugin"
+comments: true
+description: "A quick tutorial for building Bridge.NET plugins"
+keywords: "C#, Bridge.NET, Plugin, javascript, transpiler"
+---
+
+The world of modern web development is ever changing.  As web apps continue to grow in scope and
+complexity, developers are continually searching for more powerful tools to help tame that
+complexity into something comprehensible and maintainable.  Over the past several years, one of
+the pillars of modern web development has consistently been under attack, Javascript.
+
+[Source](https://twitter.com/anler/status/627601099097251840)
+
+There has been a long history of projects attempting to fix and even replace Javascript.  From
+CoffeeScript, to TypeScript, to Dart and Go, many players have entered this space, some carving
+out a niche, but none supplanting the king.
+
+A relatively new contender in this space (at least new to me) is a project called
+[Bridge.NET](https://bridge.net/).  Bridge promises to offer all the power of C#, compiled (transpiled?)
+to Javascript that can run in the browser.  At work, we are currently in the process of retiring
+a Silverlight app that is on life support, so Bridge.NET was a very intriguing option for us.  The
+idea that we could port over chunks of our existing view models with minimal changes was too
+tempting to pass up.
+
+We decided to give Bridge a go, and after being impressed initially by some
+proof of concepts, we found ourselves tugging at some of the seams between the C# world Bridge
+has constructed and the Javascript world lurking underneath.
+
+The [getting started docs](https://github.com/bridgedotnet/Bridge/wiki) for Bridge are not a bad
+start, but they leave a lot to be desired when you start really digging in.  We found ourselves in
+a situation where we needed to tweak some of the output from the Bridge compiler to help with
+integrating some non-Bridge code.  Trolling through the Bridge forums, I stumbled across
+[a post](https://forums.bridge.net/forum/general/extensions-and-plugins/998-documentation-of-how-to-make-a-plugin)
+that suggested that it was possible to write plugins for Bridge to do the kind of thing we needed,
+but for the life of me, I could find no information on how to do it.
+
+I was determined though, and stubborn.
+
