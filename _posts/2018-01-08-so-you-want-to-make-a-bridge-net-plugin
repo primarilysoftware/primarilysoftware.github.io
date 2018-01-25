@@ -36,5 +36,21 @@ integrating some non-Bridge code.  Trolling through the Bridge forums, I stumble
 that suggested that it was possible to write plugins for Bridge to do the kind of thing we needed,
 but for the life of me, I could find no information on how to do it.
 
-I was determined though, and stubborn.
+I was determined though, and stubborn.  After a fair amount of time trudging through decompliled DLLs and source
+code, I was finally able to get something working.  So without further ado, I will share my findings in the
+hope that someone else may find it userful.
 
+If you have made it this far, I assume you already have a Bridge project setup, so I will skip those details.  You
+will want to add a new class library to your solution.
+
+![new plugin project]()
+
+As far as I can tell, there isn't a Nuget package, or anything of the sort designed for building Bridge plugins.
+Instead, we will do something a little dirty.  We need to reference the Bridge.Contract.dll.  You can
+find it included in one of the packages that was installed for your Bridge application project.  So for your
+plugin project, click add reference, and browse to the `packages\Bridge.Min.16.7.0\tools` folder for your solution.
+Add `Bridge.Contract.dll` and while you are at it, go ahead and add `ICSharpCode.NRefactory.dll`.
+
+![add references]()
+
+Now we can start working on our plugin.  Add
