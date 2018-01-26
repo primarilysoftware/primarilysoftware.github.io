@@ -124,10 +124,16 @@ we can attach a debugger and start digging around.
 There is one last thing to get our plugin plugged in.  By default, Bridge is looking for plugins in the
 `Bridge/plugins` directory of our bridge project.  This is
 [configurable](https://github.com/bridgedotnet/Bridge/wiki/global-configuration#pluginspath) though.  Lets change
-this config in our bridge.json to point to the output director of our plugin project.
+this config in our bridge.json to point to the output directory of our plugin project.
 
 ```
 {
-    "pluginsPath": "..\PrimarySoftware.HowToBuildAPlugin.MyPlugin\bin\Debug"
+    "pluginsPath": "../PrimarySoftware.HowToBuildAPlugin.MyPlugin/bin/Debug"
 }
 ```
+
+If you build your solution now, you should see the following dialog pop up.
+
+![attach debugger]()
+
+And that is all there is too it.  Now go forth and build something!
