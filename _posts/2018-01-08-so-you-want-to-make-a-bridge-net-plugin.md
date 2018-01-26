@@ -42,7 +42,7 @@ I was finally able to get something working.  So without further ado, I will sha
 hope that someone else may find it useful.
 
 If you have made it this far, I assume you already have a Bridge project setup, so I will skip those details.  You
-will want to add a new class library to your solution.
+will want to add a new class library to your solution that will be the home for your plugin.
 
 ![new plugin project](https://primarilysoftware.github.io/downloads/2018-01-08-so-you-want-to-make-a-bridge-net-plugin/pluginproject.png)
 
