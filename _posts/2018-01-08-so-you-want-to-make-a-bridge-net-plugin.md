@@ -11,7 +11,7 @@ complexity, developers are continually searching for more powerful tools to help
 complexity into something comprehensible and maintainable.  Over the past several years, one of
 the pillars of modern web development has consistently been under attack, Javascript.
 
-![javascript, the good parts](primarilysoftware.github.io/downloads/2018-01-08-so-you-want-to-make-a-bridge-net-plugin/javascript-the-good-parts.jpg)
+![javascript, the good parts](https://primarilysoftware.github.io/downloads/2018-01-08-so-you-want-to-make-a-bridge-net-plugin/javascript-the-good-parts.jpg)
 [Source](https://twitter.com/anler/status/627601099097251840)
 
 There has been a long history of projects attempting to fix and even replace Javascript.  From
