@@ -12,6 +12,7 @@ complexity into something comprehensible and maintainable.  Over the past severa
 the pillars of modern web development has consistently been under attack, Javascript.
 
 ![javascript, the good parts](https://primarilysoftware.github.io/downloads/2018-01-08-so-you-want-to-make-a-bridge-net-plugin/javascript-the-good-parts.jpg)
+
 [Source](https://twitter.com/anler/status/627601099097251840)
 
 There has been a long history of projects attempting to fix and even replace Javascript.  From
@@ -137,4 +138,4 @@ If you build your solution now, you should see the following dialog pop up.
 
 ![attach debugger](https://primarilysoftware.github.io/downloads/2018-01-08-so-you-want-to-make-a-bridge-net-plugin/debugger.PNG)
 
-And that is all there is too it.  Now go forth and build something!
+And that is all there is too it.  Hopefully this post is enough to help others get started with Bridge plugins.
