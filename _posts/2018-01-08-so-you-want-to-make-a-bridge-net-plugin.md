@@ -43,7 +43,7 @@ hope that someone else may find it useful.
 If you have made it this far, I assume you already have a Bridge project setup, so I will skip those details.  You
 will want to add a new class library to your solution.
 
-![new plugin project]()
+![new plugin project](https://primarilysoftware.github.io/downloads/2018-01-08-so-you-want-to-make-a-bridge-net-plugin/pluginproject.png)
 
 As far as I can tell, there isn't a Nuget package, or anything of the sort designed for building Bridge plugins.
 Instead, we will do something a little dirty.  We need to reference the Bridge.Contract.dll.  You can
@@ -51,7 +51,7 @@ find it included in one of the packages that was installed for your Bridge appli
 plugin project, click add reference, and browse to the `packages\Bridge.Min.16.7.0\tools` folder for your solution.
 Add `Bridge.Contract.dll` and while you are at it, go ahead and add `ICSharpCode.NRefactory.dll`.
 
-![add references]()
+![add references](https://primarilysoftware.github.io/downloads/2018-01-08-so-you-want-to-make-a-bridge-net-plugin/addreferences.PNG)
 
 Now we can start working on our plugin.  Add a new class to your plugin project, inheriting from 
 `AbstractPlugin`.
@@ -134,6 +134,6 @@ this config in our bridge.json to point to the output directory of our plugin pr
 
 If you build your solution now, you should see the following dialog pop up.
 
-![attach debugger]()
+![attach debugger](https://primarilysoftware.github.io/downloads/2018-01-08-so-you-want-to-make-a-bridge-net-plugin/debugger.PNG)
 
 And that is all there is too it.  Now go forth and build something!
