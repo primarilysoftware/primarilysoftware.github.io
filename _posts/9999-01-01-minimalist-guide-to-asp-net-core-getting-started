@@ -24,9 +24,10 @@ ASP.NET Core in this way I (and you) will gain a better understanding of how the
 the framework fit together, leading to a better intuition for how to best use the framework to build web apps.
 
 ### Getting Started
-To start, I am going to create a new ASP.NET Core Web Application.  Using Visual Studio, you can
-File > New Project > ASP.NET Core Web Application, selecting the Empty project template (this is about
-minimalism afterall).  You can acheive the same thing via the command line with:
+To start, I am going to create a new ASP.NET Core Web Application, cutting out everything but the essentials.
+Using Visual Studio, you can
+File > New Project > ASP.NET Core Web Application, selecting the Empty project template.
+You can acheive the same thing via the command line with:
 
 ```
 dotnet new web
@@ -76,11 +77,10 @@ broke, don't fix it).
 > If you are really curious about what MSBuild is doing, try running the following command:
 > dotnet msbuild /pp:fullproject.xml
 
-There isn't much magic here. You can find the targets file for
-the Web SDK at:
+There isn't much magic here. You can find the targets file for the Web SDK at:
 
 ```
-C:\Program Files\dotnet\sdk\2.1.201\Sdks\Microsoft.NET.Sdk.Web\Sdk\Sdk.targets
+C:\Program Files\dotnet\sdk\2.1.301\Sdks\Microsoft.NET.Sdk.Web\Sdk\Sdk.targets
 ```
 
 > Note that the specific SDK version in the path above is going to change over time
@@ -112,5 +112,30 @@ thing to include in most projects, but is not necessary, and can be removed.
 </Project>
 ```
 
-Better.  Finally, we see a `PackageReference` to `Microsoft.AspNetCore.App`.  This is another metapackage that brings
-in all the libraries that make up ASP.NET Core.
+Better.  Finally, we see a `PackageReference` to `Microsoft.AspNetCore.App`.  This is
+[another metapackage](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/metapackage-app?view=aspnetcore-2.1)
+that brings in all the libraries for the ASP.NET part of ASP.NET Core.  Notice that there are no version numbers here.
+If one has not been specified, one is determined implicitly by the Web SDK.  Again, this helps to avoid conflicts when
+upgrading package/SDK versions.
+
+In the name of minimalism, we should take a closer look at what this package contains.
+[This list of dependencies](https://www.nuget.org/packages/Microsoft.AspNetCore.App/2.1.1)
+is not for the feint of heart.  There is a lot in there that you may or may not need, depending on the app
+(Entity Framework, Razor, Authentication, etc.).  To slim things down a bit, you can reference the
+`Microsoft.AspNetCore` package instead.
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.1" />
+  </ItemGroup>
+
+</Project>
+```
+
+> Note that in this case, a `Version` is required.
