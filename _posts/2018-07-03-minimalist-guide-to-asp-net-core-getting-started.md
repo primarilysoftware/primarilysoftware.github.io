@@ -63,7 +63,7 @@ Compared to a full framework app, the project file for a ASP.NET Core app is inc
 ```
 
 The root `Project` element has a single 
-[`Sdk` attribute](https://docs.microsoft.com/en-us/dotnet/core/tools/csproj#sdk-attribute)
+[Sdk attribute](https://docs.microsoft.com/en-us/dotnet/core/tools/csproj#sdk-attribute)
 specifying which SDK should be used to build the app.  In this case, we are using the Web SDK
 (Microsoft.NET.Sdk.Web).
 
@@ -91,9 +91,9 @@ app.
 
 > There is a bit of magic here that is worth pointing out.  When specifying the `TargetFramework`,
 > there is an implicit reference taken to an associated
-> [metapackage](https://github.com/dotnet/core/blob/master/release-notes/1.0/sdk/1.0-rc3-implicit-package-refs.md).
-> Making this reference implicit rather than explicit helps to avoid issues that can arise if the
-> `TargetFramework` version and the metapackage version of framework libraries gets out of sync.
+> [metapackage](https://github.com/dotnet/core/blob/master/release-notes/1.0/sdk/1.0-rc3-implicit-package-refs.md)
+> for the targeted framework version. Making this reference implicit rather than explicit helps to avoid issues that
+> can arise if the `TargetFramework` version and the metapackage version of framework libraries gets out of sync.
 
 Next up, we see an `ItemGroup` that includes the `wwwroot` folder.  I suppose that is a reasonable
 thing to include in most projects, but is not necessary, and can be removed.
@@ -140,7 +140,7 @@ is not for the feint of heart.  There is a lot in there that you may or may not 
 
 > Note that in this case, a `Version` is required.
 
-Even better.
+Looking even better.
 
 ### Program.cs
 
@@ -164,7 +164,7 @@ There is not much interesting going on here.  Most of the configuration has been
 
 ### Startup.cs
 
-This is where all the interesting startup logic lives for the app.
+This is where all the interesting startup would live for the app.
 
 ```csharp
 public class Startup
@@ -212,7 +212,7 @@ public static void Main(string[] args)
 Note that the bit about showing a developer exception page has been removed, and there is no need to configure
 any services just yet, so that is gone too.  What is left is fairly comprehensible.  Use the `WebHostBuilder`
 to configure the app, in this case just setting up a static response.  Once the `WebHost` has been built, we
-start it running.
+start running it.
 
 ### Wrapping Up
 
