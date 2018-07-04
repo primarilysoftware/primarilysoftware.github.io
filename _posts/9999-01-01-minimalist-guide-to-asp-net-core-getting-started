@@ -24,4 +24,93 @@ ASP.NET Core in this way I (and you) will gain a better understanding of how the
 the framework fit together, leading to a better intuition for how to best use the framework to build web apps.
 
 ### Getting Started
+To start, I am going to create a new ASP.NET Core Web Application.  Using Visual Studio, you can
+File > New Project > ASP.NET Core Web Application, selecting the Empty project template (this is about
+minimalism afterall).  You can acheive the same thing via the command line with:
 
+```
+dotnet new web
+```
+
+That is going to generate 3 files:
+
+* EmptyWebApp.csproj - the project file
+* Program.cs - contains the entry point for the app (Main)
+* Startup.cs - contains startup code to configure/bootstrap the app
+
+Lets take a look at each of those files in a little more detail.
+
+### The Project File
+Compared to a full framework app, the project file for a ASP.NET Core app is incredibly sparse.
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+</Project>
+```
+
+The root `Project` element has a single 
+[`Sdk` attribute](https://docs.microsoft.com/en-us/dotnet/core/tools/csproj#sdk-attribute)
+specifying which SDK should be used to build the app.  In this case, we are using the Web SDK
+(Microsoft.NET.Sdk.Web).
+
+> There is also a non-web SDK that you will see used for .NET Core console
+> apps or class libraries (Microsoft.NET.Sdk).
+
+This `Sdk` attribute points the build tools to the appropriate MSBuild targets file to use when
+building the app.  Yes, MSBuild is still being used under the covers to build the app (if it ain't
+broke, don't fix it).
+
+> If you are really curious about what MSBuild is doing, try running the following command:
+> dotnet msbuild /pp:fullproject.xml
+
+There isn't much magic here. You can find the targets file for
+the Web SDK at:
+
+```
+C:\Program Files\dotnet\sdk\2.1.201\Sdks\Microsoft.NET.Sdk.Web\Sdk\Sdk.targets
+```
+
+> Note that the specific SDK version in the path above is going to change over time
+
+Under the project element, you will notice a `PropertyGroup` specifying the `TargetFramework`,
+`netcoreapp2.1` in this case.  That makes sense, given we are building a ASP.NET Core 2.1
+app.
+
+> There is a bit of magic here that is worth pointing out.  When specifying the `TargetFramework`,
+> there is an implicit reference taken to an associated
+> [metapackage](https://github.com/dotnet/core/blob/master/release-notes/1.0/sdk/1.0-rc3-implicit-package-refs.md).
+> Making this reference implicit rather than explicit helps to avoid issues that can arise if the
+> `TargetFramework` version and the metapackage version of framework libraries gets out of sync.
+
+Next up, we see an `ItemGroup` that includes the `wwwroot` folder.  I suppose that is a reasonable
+thing to include in most projects, but is not necessary, and can be removed.
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+</Project>
+```
+
+Better.  Finally, we see a `PackageReference` to `Microsoft.AspNetCore.App`.  This is another metapackage that brings
+in all the libraries that make up ASP.NET Core.
