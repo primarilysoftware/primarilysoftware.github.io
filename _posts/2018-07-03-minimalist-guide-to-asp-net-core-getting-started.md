@@ -82,7 +82,7 @@ C:\Program Files\dotnet\sdk\2.1.301\Sdks\Microsoft.NET.Sdk.Web\Sdk\Sdk.targets
 > Note that the specific SDK version in the path above is going to change over time
 >
 > If you are really curious about what MSBuild is doing, try running the following command:
-> dotnet msbuild /pp:fullproject.xml
+> `dotnet msbuild /pp:fullproject.xml`
 
 Under the project element, you will notice a `PropertyGroup` specifying the `TargetFramework`,
 `netcoreapp2.1` in this case.  That makes sense, given we are building a ASP.NET Core 2.1
