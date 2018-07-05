@@ -79,7 +79,7 @@ You can find the targets file for the Web SDK at:
 C:\Program Files\dotnet\sdk\2.1.301\Sdks\Microsoft.NET.Sdk.Web\Sdk\Sdk.targets
 ```
 
-> Note that the specific SDK version in the path above is going to change over time
+> Note that the specific SDK version in the path above is going to change over time.
 >
 > If you are really curious about what MSBuild is doing, try running the following command:
 > `dotnet msbuild /pp:fullproject.xml`
