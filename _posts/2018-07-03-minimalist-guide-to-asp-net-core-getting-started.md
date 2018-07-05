@@ -72,16 +72,15 @@ specifying which SDK should be used to build the app.  In this case, we are usin
 
 This `Sdk` attribute points the build tools to the appropriate MSBuild targets file to use when
 building the app.  Yes, MSBuild is still being used under the covers to build the app (if it ain't
-broke, don't fix it).
-
-There isn't much magic here. You can find the targets file for the Web SDK at:
+broke, don't fix it).  You can actually take a look at the targets file if you feel so inclined.
+You can find the targets file for the Web SDK at:
 
 ```
 C:\Program Files\dotnet\sdk\2.1.301\Sdks\Microsoft.NET.Sdk.Web\Sdk\Sdk.targets
 ```
 
 > Note that the specific SDK version in the path above is going to change over time
-
+>
 > If you are really curious about what MSBuild is doing, try running the following command:
 > dotnet msbuild /pp:fullproject.xml
 
