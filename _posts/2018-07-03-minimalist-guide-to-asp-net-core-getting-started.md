@@ -216,8 +216,8 @@ public static void Main(string[] args)
 
 Note that the bit about showing a developer exception page has been removed, and there is no need to configure
 any services just yet, so that is gone too.  What is left is fairly comprehensible.  Use the `WebHostBuilder`
-to configure the app, in this case just setting up a static response.  Once the `WebHost` has been built, we
-start running it.
+to configure the `WebHost`, our app.  For now, any request will return a static response.  Once the `WebHost`
+has been built, call `Run` to start it up.
 
 ### Wrapping Up
 
