@@ -9,9 +9,9 @@ keywords: "asp.net core, asp.net core 2.1, csharp, web"
 ASP.NET Core has really arrived.  With the release of ASP.NET Core 2.1, the framework has reached a level
 of maturity and adoption that it cannot be overlooked when starting a new project.  It has been a bit of 
 a bumpy road getting to this point.  The API surface for ASP.NET Core apps has evolved rapidly.  Early
-adopters of ASP.NET Core were unfortunately caught in the shuffle, while the ASP.NET Core team refined
-and improved the framework.  Now that 2.1 is out, it seems the framework is in a place where it has really
-started to stabalize.  So, I think this is the perfect time to kick the tires on Microsoft's new hot rod,
+adopters of ASP.NET Core were unfortunately caught in the shuffle while the ASP.NET Core team refined
+and improved the framework.  Now that 2.1 is out, it is starting to feel like the framework has reached
+a point of stability.  So, I think this is the perfect time to kick the tires on Microsoft's new hot rod
 and take a closer look at what ASP.NET Core has to offer.
 
 ### The Minimalist Guide
@@ -74,9 +74,6 @@ This `Sdk` attribute points the build tools to the appropriate MSBuild targets f
 building the app.  Yes, MSBuild is still being used under the covers to build the app (if it ain't
 broke, don't fix it).
 
-> If you are really curious about what MSBuild is doing, try running the following command:
-> dotnet msbuild /pp:fullproject.xml
-
 There isn't much magic here. You can find the targets file for the Web SDK at:
 
 ```
@@ -84,6 +81,9 @@ C:\Program Files\dotnet\sdk\2.1.301\Sdks\Microsoft.NET.Sdk.Web\Sdk\Sdk.targets
 ```
 
 > Note that the specific SDK version in the path above is going to change over time
+
+> If you are really curious about what MSBuild is doing, try running the following command:
+> dotnet msbuild /pp:fullproject.xml
 
 Under the project element, you will notice a `PropertyGroup` specifying the `TargetFramework`,
 `netcoreapp2.1` in this case.  That makes sense, given we are building a ASP.NET Core 2.1
