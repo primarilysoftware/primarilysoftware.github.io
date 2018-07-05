@@ -169,7 +169,7 @@ There is not much interesting going on here.  Most of the configuration has been
 
 ### Startup.cs
 
-This is where all the interesting startup would live for the app.
+This is where all the interesting startup code would live for the app.
 
 ```csharp
 public class Startup
