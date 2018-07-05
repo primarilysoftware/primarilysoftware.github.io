@@ -194,7 +194,7 @@ public class Startup
 ```
 
 There is not much going on here, which is to be expected since this is an empty app.  I am not a fan of how
-`Program.cs` and `Startup.cs` are split up.  It makes it harder to see how the pieces fit together.  It
+`Program.cs` and `Startup.cs` are split up.  It makes it harder to see how the pieces fit together.  That approach
 might make more sense as the app startup logic gets more complicated, but for now, lets combine these files,
 and cutout the parts that aren't necessary.
 
