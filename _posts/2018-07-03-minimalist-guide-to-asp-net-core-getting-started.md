@@ -143,7 +143,7 @@ Looking even better.
 
 Wait a second, the app has a Startup.cs and Program.cs, yet those file references are missing from the project file.
 What is going on here?  Well the SDK is doing
-[a little extrac work for us](https://docs.microsoft.com/en-us/dotnet/core/tools/csproj#default-compilation-includes-in-net-core-projects).
+[a little extra work for us](https://docs.microsoft.com/en-us/dotnet/core/tools/csproj#default-compilation-includes-in-net-core-projects).
 By convention, the SDK (remember the SDK is just an MSBuild target) is going to inlcude all files that match the glob
 `**/*.cs` for compilation.
 
