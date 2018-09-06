@@ -17,7 +17,7 @@ the framework fit together, leading to a better intuition for how to best use th
 
 In this post, I want to try and find the simplest way to get going with routing.  If you missed the
 [previous post](http://blog.primarilysoftware.com/2018/minimalist-guide-to-asp-net-core-getting-started/),
-check it out to see the details for how the project was setup.
+check it out to see the details for how we did the initial project setup.
 
 ### Where we left off
 When we left off, we had an app that could spin up and return a simple hello world message.
@@ -121,7 +121,7 @@ public class Api
 }
 ```
 
-Here we have what is basically a POCO class, decorated with a couple of attributes.  Now when we start up our app, and
+Here we have what is basically a POCO class, decorated with a couple of attributes.  Now when we start up our app and
 navigate to /Test...
 
 ![Hello World!](https://primarilysoftware.github.io/downloads/2018-09-05-minimalist-guide-to-asp-net-core-getting-routing/helloworld.png)
@@ -212,6 +212,10 @@ Now, if we restart our app, our /Test2 method works as expected.
 ![Hello World!](https://primarilysoftware.github.io/downloads/2018-09-05-minimalist-guide-to-asp-net-core-getting-routing/person.png)
 
 ### Wrapping Up
-With support for routing and JSON, we have the makings for a real API.  This is more than enough to implement
-a simple API, but before too long, you are you are going to encounter the need for things like Dependency Injection and
-Authentication.  We will dive into those topics in future posts, stay tuned.
+With support for routing and JSON, we have the makings for a real API.  With Attribute Routing and the new `ApiController`
+attribute, we have all the flexibility we could want to setup controllers, or route handlers, or whatever pattern we may
+want to follow for the app.
+
+This is more than enough to implement a simple API, but before too long, you are you are going
+to encounter the need for things like Dependency Injection and Authentication.  We will dive into those topics in future
+posts, so stay tuned.
