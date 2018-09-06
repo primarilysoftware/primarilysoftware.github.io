@@ -19,7 +19,7 @@ In this post, I want to try and find the simplest way to get going with routing.
 [previous post](http://blog.primarilysoftware.com/2018/minimalist-guide-to-asp-net-core-getting-started/),
 check it out to see the details for how we did the initial project setup.
 
-### Where we left off
+### Where We Left Off
 When we left off, we had an app that could spin up and return a simple hello world message.
 
 ```csharp
@@ -98,7 +98,7 @@ You will also notice that our `Configure` method has changed.  Instead of settin
 "Hello World!", we are calling the `UseMvc` extension method to get everything wired up.  This extension method will
 inject all that MVC routing goodness into the ASP.NET request execution pipeline.
 
-### Our first route
+### Our First Route
 Now that all the configuration has been taken care of, lets get to work setting up our first route.  Given that
 this is an MVC app, we are going to need a controller, right?  Well not necessarily.  ASP.NET Core 2.1 introduces
 a nifty new attribute, [`ApiController`](https://docs.microsoft.com/en-us/aspnet/core/web-api/?view=aspnetcore-2.1#annotate-class-with-apicontrollerattribute).
@@ -124,7 +124,7 @@ public class Api
 Here we have what is basically a POCO class, decorated with a couple of attributes.  Now when we start up our app and
 navigate to /Test...
 
-![Hello World!](https://primarilysoftware.github.io/downloads/2018-09-05-minimalist-guide-to-asp-net-core-getting-routing/helloworld.png)
+![Hello World!](https://primarilysoftware.github.io/downloads/2018-09-05-minimalist-guide-to-asp-net-core-routing/helloworld.PNG)
 
 It works!
 
@@ -157,7 +157,7 @@ public Person Test2()
 
 When we navigate to /Test2, we get a much lest satisfying result.
 
-![Hello World!](https://primarilysoftware.github.io/downloads/2018-09-05-minimalist-guide-to-asp-net-core-getting-routing/406error.png)
+![Hello World!](https://primarilysoftware.github.io/downloads/2018-09-05-minimalist-guide-to-asp-net-core-routing/406error.PNG)
 
 The problem is, in our minimalist setup, we have not included anything to handle formatting complex response types, hence the
 [HTTP 406 error](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/406).  Returning a simple string works fine,
@@ -209,7 +209,7 @@ public static void Main(string[] args)
 
 Now, if we restart our app, our /Test2 method works as expected.
 
-![Hello World!](https://primarilysoftware.github.io/downloads/2018-09-05-minimalist-guide-to-asp-net-core-getting-routing/person.png)
+![Hello World!](https://primarilysoftware.github.io/downloads/2018-09-05-minimalist-guide-to-asp-net-core-routing/person.PNG)
 
 ### Wrapping Up
 With support for routing and JSON, we have the makings for a real API.  With Attribute Routing and the new `ApiController`
