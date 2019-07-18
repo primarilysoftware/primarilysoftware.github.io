@@ -8,7 +8,7 @@ keywords: ".net, web api, asp.net, json merge patch"
 
 At my day job, I have been working on a new microservice that sits behind a REST API.  I got to the point where I needed to
 support updating some resources, and was looking for the "right" RESTful way to accept update requests.  After some research,
-I found two options that seemed to fit my needs well, [JSON Patch](https://tools.ietf.org/html/rfc6902),
+I found two options that seemed to fit my needs well, [JSON Patch](https://tools.ietf.org/html/rfc6902)
 and [JSON Merge Patch](https://tools.ietf.org/html/rfc7386).
 
 ### JSON Patch
@@ -45,3 +45,35 @@ FWIW, .NET does has some support for [JSON Patch](https://docs.microsoft.com/en-
 But I just wasn't sold on the approach.
 
 ### JSON Merge Patch
+JSON Merge Patch attempts to solve a similar problem as JSON Patch but takes a different approach.  While I see JSON Patch
+documents as assembly code, a JSON Merge Patch looks more like a Diff between two documents.  Again, lets look an example
+from the RFC:
+
+```
+PATCH /target HTTP/1.1
+Host: example.org
+Content-Type: application/merge-patch+json
+
+{
+  "a":"z",
+  "c": {
+    "f": null
+  }
+}
+```
+
+In a JSON Merge Patch request, the shape of the JSON object is the same as that of the resource you want to update,
+however, you only specify the fields you want to change.  In this case, we should update the `a` field, assigning it
+the value `z`.  Also, `c.f` should be set to `null`.  Imagine the target resource for the above request had some
+field `b = 123`.  Since it was ommitted from the patch request, that field should not be changed.
+
+I find a certain elegance in this approach.  No special syntax, just send the fields you want to update. Admittedly,
+it is not as flexible as the JSON Patch format.  For instance, there is not a succinct way to express that you want to remove a
+single item from an array.  To modify an array, the merge patch request should include the entire modified array.  Contrast
+that with JSON Patch, where you could send an operation like `{"op": "remove", "path": "/things/1"}`.
+
+Even with the constraints, I still prefer the JSON Merge Patch approach.  It just feels right.  Unfortunately, .NET
+does not currently have any support for it.  At the time of this writing, there is an
+[open issue](https://github.com/aspnet/AspNetCore/issues/2436) on the ASP.NET Core GitHub repo, but there hasn't been
+any movement.  A couple of community members have offerred solutions, but they didn't quite work for my needs.  So,
+lets see if we can come up with a workable solution.
