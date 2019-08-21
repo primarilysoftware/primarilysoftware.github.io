@@ -77,3 +77,90 @@ does not currently have any support for it.  At the time of this writing, there 
 [open issue](https://github.com/aspnet/AspNetCore/issues/2436) on the ASP.NET Core GitHub repo, but there hasn't been
 any movement.  A couple of community members have offerred solutions, but they didn't quite work for my needs.  So,
 lets see if we can come up with a workable solution.
+
+### A Naive Approach
+Let's start with the simplest thing that could possibly work.  Imagine in our app, we have a `Person` class.  A
+person has a `Name` and an `Address`.
+
+```csharp
+public class Person
+{
+    public Guid Identifier { get; set; }
+    public string? Name { get; set; }
+    public Address? Address { get; set; }
+}
+
+public class Address
+{
+    public string? Street { get; set; }
+    public string? City { get; set; }
+    public string? State { get; set; }
+    public string? ZipCode { get; set; }
+}
+```
+
+We need to expose a way to update a person.  So we might create an endpoint like this:
+
+```csharp
+[ApiController]
+public class ApiController
+{
+    [HttpPatch]
+    [Route("naivepatch/person/{personId}")]
+    public IActionResult NaivePatch(Guid personId, [FromBody]Person data)
+    {
+        // TODO update person
+    }
+}
+```
+
+Given a request like:
+
+```
+PATCH /naivepatch/person/1c8ff3f2-16d5-4a5a-94d1-52f25f2a80e6 HTTP/1.1
+Content-Type: application/json
+Host: localhost:5000
+Content-Length: 33
+
+{
+    "name": "test person"
+}
+```
+
+According to the JSON Merge Patch spec, we should only update the fields that are supplied in the request (in this case, update `Name`
+setting the value to "test person").  We might try and write some code like:
+
+```csharp
+var person = /* load from data store using personId */;
+            
+if (data.Name != null)
+{
+    person.Name = data.Name;
+}
+
+if (data.Address != null)
+{
+    person.Address = data.Address;
+}
+
+/* save updated person */
+```
+
+This should handle our request just fine.  We are done then, right?  Not quite.  How would we handle a request like:
+
+```
+PATCH http://localhost:5000/naivepatch/person/1c8ff3f2-16d5-4a5a-94d1-52f25f2a80e6 HTTP/1.1
+Content-Type: application/json
+Host: localhost:5000
+Content-Length: 26
+
+{
+   "address": null
+}
+```
+
+The intent of this request is to clear this person's address, setting it to `null`.  However, after model binding has completed,
+there is no way for us to tell in our controller action whether Person.Address is `null` because `address` was not included in
+the request, or `null` because `address` was set to `null` in the request.
+
+We are going to need to do a bit more work.
