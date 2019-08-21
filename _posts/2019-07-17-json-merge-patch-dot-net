@@ -164,3 +164,35 @@ there is no way for us to tell in our controller action whether Person.Address i
 the request, or `null` because `address` was set to `null` in the request.
 
 We are going to need to do a bit more work.
+
+### A Better Design
+Simple csharp classes do not give us a way to distinguish between a `null` value and an `undefined` value, so we will need
+to wrap the model being passed into our action in a way that allows for this distinction.  Imagine if instead of accepting a
+`Person` in our controller action, we did something like:
+
+```csharp
+[HttpPatch]
+[Route("betterpatch/person/{personId}")]
+public IActionResult BetterPatch(Guid personId, [FromBody]JsonMergePatch<Person> data)
+{
+    var person = /* load from data store using personId */;
+
+    if (data.IsDefined(x => x.Name, out var name))
+    {
+        person.Name = name;
+    }
+
+    if (data.IsDefined(x => x.Address, out var address))
+    {
+        person.Address = address;
+    }
+
+    /* save updated person */
+
+    return new OkResult();
+}
+```
+
+This hypothetical `JsonMergePatch<T>` class would allow us to first inspect whether a value was supplied in the request,
+and if so, extract the value and do something with it.  Sadly this class does not actually exist... yet.  Let's build it.
+
