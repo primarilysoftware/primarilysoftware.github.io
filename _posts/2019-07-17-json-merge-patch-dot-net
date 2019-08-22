@@ -173,16 +173,16 @@ to wrap the model being passed into our action in a way that allows for this dis
 ```csharp
 [HttpPatch]
 [Route("betterpatch/person/{personId}")]
-public IActionResult BetterPatch(Guid personId, [FromBody]JsonMergePatch<Person> data)
+public IActionResult BetterPatch(Guid personId, [FromBody]JsonMergePatch<Person> request)
 {
     var person = /* load from data store using personId */;
 
-    if (data.IsDefined(x => x.Name, out var name))
+    if (request.IsDefined(x => x.Name, out var name))
     {
         person.Name = name;
     }
 
-    if (data.IsDefined(x => x.Address, out var address))
+    if (request.IsDefined(x => x.Address, out var address))
     {
         person.Address = address;
     }
@@ -196,3 +196,123 @@ public IActionResult BetterPatch(Guid personId, [FromBody]JsonMergePatch<Person>
 This hypothetical `JsonMergePatch<T>` class would allow us to first inspect whether a value was supplied in the request,
 and if so, extract the value and do something with it.  Sadly this class does not actually exist... yet.  Let's build it.
 
+### JsonMergePatch<T>
+Given this is **Json**MergePatch, we will be starting from a JSON document.
+
+> For a long time, if you were dealing with JSON in .NET, you would use [Json.NET](https://www.newtonsoft.com/json).
+> While this library has served us well for many years, it wasn't something that shipped "in the box" with .NET.
+> With .NET core 3.0, we have a new toy to play with,
+> [System.Text.Json](https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-apis/).
+> Let's take this as a chance to play with these new bits.
+
+We will construct our class as follows:
+
+```csharp
+public class JsonMergePatch<T>
+{
+    private readonly JsonDocument json;
+
+    private JsonMergePatch(JsonDocument json)
+    {
+        this.json = json;
+    }
+    
+    public static JsonMergePatch<T> Create(JsonDocument json)
+    {
+        return new JsonMergePatch<T>(json);
+    } 
+}
+```
+
+> You might be wondering why the static `Create` method.  This is pattern I have been smitten by somewhat recently.
+> I like it because it allows me to have a single constructor.  Having a single constructor makes it easier for me
+> to reason about the invariants of my class upon construction.  While we haven't gotten there yet, you could imagine
+> in this case you may want to construct a `JsonMergePatch' object from a `string`, or maybe a `Stream`.  Instead of
+> having several different constructors, I can create overloads for `Create` that would convert the supplied
+> parameters to the `JsonDocument' type that my class really depends upon.  Also, this pattern even allows for things
+> like `async` construction.  Not sure this would be a good idea, but I could imagine an overload like
+> `Task<JsonMergePatch<T>> Create(Uri uri)` that fetches the specified resource asynchronously and converts it to a
+> `JsonMergePatch<T>`.  Can't do that with constructors.  Making the constuctor private forces you to go through the
+> 'Create' methods, keeping the API consistent.
+
+That is the easy part.  The interesting code will be in the `IsDefined` method.
+
+```csharp
+public bool IsDefined<TProperty>(Expression<Func<T, TProperty>> propertyExpression, out TProperty value)
+{
+    ...
+}  
+```
+
+We want to enforce some level of type safety when pulling from the JSON document.  The help with that we are taking
+a `propertyExpression` to tell us which property to search for.  Similar to the various `TryParse` methods in the 
+BCL, we take an `out` parameter of `TProperty`, and return a `bool`.  If we find the specified property in the 
+JSON document, we will set the `out` parameter, and return true.  Otherwise, we will return false.
+
+The `JsonDocument` we are working with is a tree of `JsonElement`s.  We can use the 
+[JsonElement.TryGetProperty(string, out JsonElement)](https://docs.microsoft.com/en-us/dotnet/api/system.text.json.jsonelement.trygetproperty?view=netcore-3.0)
+method to test if a property exists in the JSON document, and if so get its value.  However, this API takes a `string`,
+while our method takes an `Expression`, so first we will need to convert our property expression to the name of a property.
+
+Parsing expression trees to get property names is a common problem.  There is no shortage code snippets out there
+showing how it can be down.  Here is how I am going to approach it:
+
+```csharp
+private Stack<string> GetPropertyPath<TProperty>(Expression<Func<T, TProperty>> pathExpression)
+{
+    var memberExpression = pathExpression.Body as MemberExpression;
+    var names = new Stack<string>();
+
+    while (memberExpression != null)
+    {
+        names.Push(memberExpression.Member.Name);
+        memberExpression = memberExpression.Expression as MemberExpression;
+    }
+
+    return names;
+}
+```
+
+One thing to note here is I am returning a `Stack<string>`.  I wanted to be able to support accessing nested properties
+directly, like `request.IsDefined(x => x.Address.City, out var city)`.  To do that, we will need to keep track of the
+property path from the root of the JSON document down to the value we are interested in.
+
+Now that we can get the property names, lets use that to start searching the `JsonDocument`.
+
+```csharp
+public bool IsDefined<TProperty>(Expression<Func<T, TProperty>> propertyExpression, out TProperty value)
+{
+    var propertyPath = this.GetPropertyPath(propertyExpression);
+    var jsonElement = this.json.RootElement;
+
+    while (propertyPath.Count > 0)
+    {
+        var propertyName = propertyPath.Pop();
+        if (jsonElement.TryGetProperty(propertyName, out var childElement))
+        {
+            jsonElement = childElement;
+            continue;
+        }
+        
+        // if we got here, the property didn't exist in the JsonDocument, so return false
+        value = default!;
+        return false;
+    }
+    
+    // TADA! jsonElement should now contain the value we were searching for, now what?
+}
+```
+
+This code is a little gnarly because we are trying to support nested properties.  We loop through the
+property names in our `propertyPath' one by one.  Each time we find the specified property, we
+descend deeper into the `JsonDocument` until we either we don't find the specified property, or we
+reach the end of `propertyPath`.  If we get out of the loop without returning, we have the value
+we are looking for, nice!
+
+At this point we have a `JsonElement`.  We need to convert this to `TProperty`.  We can use the
+[JsonSerializer.Deserialize](https://docs.microsoft.com/en-us/dotnet/api/system.text.json.jsonserializer.deserialize?view=netcore-3.0#System_Text_Json_JsonSerializer_Deserialize__1_System_String_System_Text_Json_JsonSerializerOptions_)
+
+```csharp
+value = JsonSerializer.Deserialize<TProperty>(jsonElement.GetRawText());
+return true;
+```
