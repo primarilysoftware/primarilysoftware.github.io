@@ -316,3 +316,76 @@ At this point we have a `JsonElement`.  We need to convert this to `TProperty`. 
 value = JsonSerializer.Deserialize<TProperty>(jsonElement.GetRawText());
 return true;
 ```
+
+> One of the points of emphasis in the new `System.Text.Json` apis was to improve performance and minimize
+> allocations.  It is unfortunate that there does not appear to be a way to deserialize a `JsonElement`
+> without first converting it to a `string`.  There is a [issue](https://github.com/dotnet/corefx/issues/37564)
+> on github suggesting a fix for this, but for now I think this is the best we can do.
+
+Beautiful!  With what we have so far, our `JsonMergePatch` class should work as intended.  There is one small issue
+that you will run into pretty quickly though.  The `TryGetProperty` method we are using to find properties in the
+`JsonDocument` is case sensitive.  Quite often, the property names of our csharp classes will be `PascalCase`,
+while the property names in the JSON will be `camelCase`.  Let's tweek the code a bit so that we can match properties
+whether they are `PascalCase` or `camelCase` in the JSON document.
+
+```csharp
+public bool IsDefined<TProperty>(Expression<Func<T, TProperty>> propertyExpression, out TProperty value)
+{
+    var propertyPath = this.GetPropertyPath(propertyExpression);
+    var jsonElement = this.json.RootElement;
+    var camelCase = false;
+
+    while (propertyPath.Count > 0)
+    {
+        var propertyName = propertyPath.Pop();
+        if (jsonElement.TryGetProperty(propertyName, out var childElement))
+        {
+            jsonElement = childElement;
+            continue;
+        }
+
+        if (jsonElement.TryGetProperty(CamelCase(propertyName), out childElement))
+        {
+            camelCase = true;
+            jsonElement = childElement;
+            continue;
+        }
+
+        value = default!;
+        return false;
+    }
+
+    value = JsonSerializer.Deserialize<TProperty>(
+        jsonElement.GetRawText(),
+        new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = camelCase ? JsonNamingPolicy.CamelCase : null
+        });
+
+    return true;
+}
+
+private static string? CamelCase(string name)
+{
+    if (name == null || name.Length == 0)
+    {
+        return name;
+    }
+
+    if (name.Length == 1)
+    {
+        return name.ToLower();
+    }
+
+    return char.ToLower(name[0]) + name.Substring(1);
+}
+```
+
+Now we will first search for a property that exactly matches the name from the property expression.  If one
+is not found, we will try to convert the property name to `camelCase` and try again.  Also note that when
+deserializing the `JsonElement` to `TProperty`, we need to specify whether the source document was `camelCase`
+so that things are deserialized correctly.
+
+### Model Binding
+
+
