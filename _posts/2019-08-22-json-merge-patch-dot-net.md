@@ -134,19 +134,24 @@ According to the JSON Merge Patch spec, we should only update the fields that ar
 setting the value to "test person").  We might try and write some code like:
 
 ```csharp
-var person = /* load from data store using personId */;
-            
-if (data.Name != null)
+public IActionResult NaivePatch(Guid personId, [FromBody]Person data)
 {
-    person.Name = data.Name;
-}
+    var person = /* load from data store using personId */;
 
-if (data.Address != null)
-{
-    person.Address = data.Address;
-}
+    if (data.Name != null)
+    {
+        person.Name = data.Name;
+    }
 
-/* save updated person */
+    if (data.Address != null)
+    {
+        person.Address = data.Address;
+    }
+
+    /* save updated person */
+    
+    return new OkResult();
+}
 ```
 
 This should handle our request just fine.  We are done then, right?  Not quite.  How would we handle a request like:
