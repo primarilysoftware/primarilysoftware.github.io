@@ -232,16 +232,19 @@ public class JsonMergePatch<T>
 }
 ```
 
-> You might be wondering why the static `Create` method.  This is pattern I have been smitten by somewhat recently.
-> I like it because it allows me to have a single constructor.  Having a single constructor makes it easier for me
-> to reason about the invariants of my class upon construction.  While we haven't gotten there yet, you could imagine
-> in this case you may want to construct a `JsonMergePatch' object from a `string`, or maybe a `Stream`.  Instead of
+> You might be wondering why the static `Create` method.  This is pattern I have been smitten with somewhat recently.
+> I like it because it allows me to have a single constructor, which makes it easier for me
+> to reason about the invariants of my class upon construction.
+>
+> While we haven't gotten there yet, you could imagine
+> wanting to construct a `JsonMergePatch' object from a `string`, or maybe a `Stream`.  Instead of
 > having several different constructors, I can create overloads for `Create` that would convert the supplied
-> parameters to the `JsonDocument' type that my class really depends upon.  Also, this pattern even allows for things
-> like `async` construction.  Not sure this would be a good idea, but I could imagine an overload like
+> parameters to the `JsonDocument' type that my class really depends upon.
+>
+> Also, this pattern allows for things
+> like `async` construction.  Maybe I want an overload like
 > `Task<JsonMergePatch<T>> Create(Uri uri)` that fetches the specified resource asynchronously and converts it to a
-> `JsonMergePatch<T>`.  Can't do that with constructors.  Making the constuctor private forces you to go through the
-> 'Create' methods, keeping the API consistent.
+> `JsonMergePatch<T>`.  Can't do that with constructors.
 
 That is the easy part.  The interesting code will be in the `IsDefined` method.
 
@@ -252,7 +255,7 @@ public bool IsDefined<TProperty>(Expression<Func<T, TProperty>> propertyExpressi
 }  
 ```
 
-We want to enforce some level of type safety when pulling from the JSON document.  The help with that we are taking
+We want to enforce some level of type safety when pulling from the JSON document.  To help with that we are taking
 a `propertyExpression` to tell us which property to search for.  Similar to the various `TryParse` methods in the 
 BCL, we take an `out` parameter of `TProperty`, and return a `bool`.  If we find the specified property in the 
 JSON document, we will set the `out` parameter, and return true.  Otherwise, we will return false.
@@ -263,7 +266,7 @@ method to test if a property exists in the JSON document, and if so get its valu
 while our method takes an `Expression`, so first we will need to convert our property expression to the name of a property.
 
 Parsing expression trees to get property names is a common problem.  There is no shortage code snippets out there
-showing how it can be down.  Here is how I am going to approach it:
+showing how it can be done.  Here is how I am going to approach it:
 
 ```csharp
 private Stack<string> GetPropertyPath<TProperty>(Expression<Func<T, TProperty>> pathExpression)
@@ -285,7 +288,7 @@ One thing to note here is I am returning a `Stack<string>`.  I wanted to be able
 directly, like `request.IsDefined(x => x.Address.City, out var city)`.  To do that, we will need to keep track of the
 property path from the root of the JSON document down to the value we are interested in.
 
-Now that we can get the property names, lets use that to start searching the `JsonDocument`.
+Now that we have a function to get the property names, let's use it to start searching the `JsonDocument`.
 
 ```csharp
 public bool IsDefined<TProperty>(Expression<Func<T, TProperty>> propertyExpression, out TProperty value)
@@ -312,20 +315,24 @@ public bool IsDefined<TProperty>(Expression<Func<T, TProperty>> propertyExpressi
 ```
 
 This code is a little gnarly because we are trying to support nested properties.  We loop through the
-property names in our `propertyPath' one by one.  Each time we find the specified property, we
-descend deeper into the `JsonDocument` until we either we don't find the specified property, or we
+property names in our `propertyPath` one by one.  Each time we find the specified property, we
+descend deeper into the `JsonDocument` until either we don't find the specified property, or we
 reach the end of `propertyPath`.  If we get out of the loop without returning, we have the value
-we are looking for, nice!
+we are looking for.
 
-At this point we have a `JsonElement`.  We need to convert this to `TProperty`.  We can use the
+At this point we have a `JsonElement`.  We need to convert this to `TProperty`.  For that, we can use
 [JsonSerializer.Deserialize](https://docs.microsoft.com/en-us/dotnet/api/system.text.json.jsonserializer.deserialize?view=netcore-3.0#System_Text_Json_JsonSerializer_Deserialize__1_System_String_System_Text_Json_JsonSerializerOptions_)
 
 ```csharp
-value = JsonSerializer.Deserialize<TProperty>(jsonElement.GetRawText());
-return true;
+public bool IsDefined<TProperty>(Expression<Func<T, TProperty>> propertyExpression, out TProperty value)
+{
+    ...
+    value = JsonSerializer.Deserialize<TProperty>(jsonElement.GetRawText());
+    return true;
+}
 ```
 
-> One of the points of emphasis in the new `System.Text.Json` apis was to improve performance and minimize
+> One of the points of emphasis in the new `System.Text.Json` APIs was to improve performance and minimize
 > allocations.  It is unfortunate that there does not appear to be a way to deserialize a `JsonElement`
 > without first converting it to a `string`.  There is a [issue](https://github.com/dotnet/corefx/issues/37564)
 > on github suggesting a fix for this, but for now I think this is the best we can do.
