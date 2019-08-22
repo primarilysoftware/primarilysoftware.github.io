@@ -6,6 +6,9 @@ description: "A pattern for implementing the JSON Merge Patch Spec in .NET"
 keywords: ".net, web api, asp.net, json merge patch"
 ---
 
+> Source code related to this post is available [here](https://primarilysoftware.visualstudio.com/_git/JsonMergePatch).
+> A nuget package is also available - [JsonMergePatch](https://www.nuget.org/packages/JsonMergePatch/1.0.0-CI-20190822-054746).
+
 At my day job, I have been working on a new microservice that sits behind a REST API.  I got to the point where I needed to
 support updating some resources, and was looking for the "right" RESTful way to accept update requests.  After some research,
 I found two options that seemed to fit my needs well, [JSON Patch](https://tools.ietf.org/html/rfc6902)
@@ -461,4 +464,8 @@ like we intend, and patch our resource as necessary.
 All in all, I am pretty happy with how this turned out.  In not very much code, I was able to get a decent
 JSON Merge Patch implementation working.  I have used this approach on a couple of different projects, and it
 has served me well so far.
+
+You can view all the code [here](https://primarilysoftware.visualstudio.com/_git/JsonMergePatch).  I have a pre-release
+[nuget package](https://www.nuget.org/packages/JsonMergePatch/1.0.0-CI-20190822-054746) published as well.  Feel free
+to check it out, and reach out if you have any questions.
 
