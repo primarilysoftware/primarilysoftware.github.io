@@ -387,5 +387,78 @@ deserializing the `JsonElement` to `TProperty`, we need to specify whether the s
 so that things are deserialized correctly.
 
 ### Model Binding
+We had updated our controller action to accept a `JsonMergePatch` parameter:
 
+```csharp
+[HttpPatch]
+[Route("betterpatch/person/{personId}")]
+public IActionResult BetterPatch(Guid personId, [FromBody]JsonMergePatch<Person> request)
+```
+
+This is not going to work quite yet.  We need to tell ASP.NET how to bind to the `JsonMergePatch` parameter.
+For that, we will need to write a [custom model binder](https://docs.microsoft.com/en-us/aspnet/core/mvc/advanced/custom-model-binding?view=aspnetcore-2.2).
+First we will implement an `IModelBinder`:
+
+```csharp
+public class JsonMergePatchModelBinder<T> : IModelBinder
+{
+    public async Task BindModelAsync(ModelBindingContext bindingContext)
+    {
+        if (bindingContext == null)
+        {
+            throw new ArgumentNullException(nameof(bindingContext));
+        }
+
+        var jsonDocument = await JsonDocument.ParseAsync(bindingContext.HttpContext.Request.Body);
+        var model = JsonMergePatch<T>.Create(jsonDocument);
+        bindingContext.Result = ModelBindingResult.Success(model);
+    }
+}
+```
+
+All this needs to do is create a `JsonMergePatch` instance from the the supplied `ModelBindingContext`.
+
+Next, we need to write an `IModelBindingProvider`.  Its job will be to return our model binder whenever we find
+a parameter that is of type `JsonMergePatch`.
+
+```csharp
+public class JsonMergePatchModelBindingProvider : IModelBinderProvider
+{
+    public IModelBinder GetBinder(ModelBinderProviderContext context)
+    {
+        if (context == null)
+        {
+            throw new ArgumentNullException(nameof(context));
+        }
+
+        if (context.Metadata.ModelType.GetTypeInfo().IsGenericType &&
+            context.Metadata.ModelType.GetGenericTypeDefinition() == typeof(JsonMergePatch<>))
+        {
+            var typeArgs = context.Metadata.ModelType.GetGenericArguments();
+            var closedGenericType = typeof(JsonMergePatchModelBinder<>).MakeGenericType(typeArgs);
+            return (IModelBinder)Activator.CreateInstance(closedGenericType)!;
+        }
+
+        return null!;
+    }
+}
+```
+
+There is a bit of reflection going on here, but it is not terribly complicated.  Finally, we need to register the
+model binding provider when our site starts up.  Somewhere inside of `ConfigureServices`, we need to add:
+
+```csharp
+services.AddControllers(config =>
+{
+    config.ModelBinderProviders.Insert(0, new JsonMergePatchModelBindingProvider());
+});
+```
+
+And that should do it.  Now if we send a JSON Merge Patch document to our controller action, we can inspect it
+like we intend, and patch our resource as necessary.
+
+### Wrapping up
+All in all, I am pretty happy with how this turned out.  In not very much code, I was able to get a decent
+JSON Merge Patch implementation working.  I have used this approach on a couple of different projects, and it
+has served me well so far.
 
