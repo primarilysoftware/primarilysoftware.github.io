@@ -232,14 +232,14 @@ public class JsonMergePatch<T>
 }
 ```
 
-> You might be wondering why the static `Create` method.  This is pattern I have been smitten with somewhat recently.
+> You might be wondering why the static `Create` method.  This is a pattern I have been smitten with somewhat recently.
 > I like it because it allows me to have a single constructor, which makes it easier for me
 > to reason about the invariants of my class upon construction.
 >
 > While we haven't gotten there yet, you could imagine
-> wanting to construct a `JsonMergePatch' object from a `string`, or maybe a `Stream`.  Instead of
+> wanting to construct a `JsonMergePatch` object from a `string`, or maybe a `Stream`.  Instead of
 > having several different constructors, I can create overloads for `Create` that would convert the supplied
-> parameters to the `JsonDocument' type that my class really depends upon.
+> parameters to the `JsonDocument` type that my class really depends upon.
 >
 > Also, this pattern allows for things
 > like `async` construction.  Maybe I want an overload like
@@ -265,7 +265,7 @@ The `JsonDocument` we are working with is a tree of `JsonElement`s.  We can use 
 method to test if a property exists in the JSON document, and if so get its value.  However, this API takes a `string`,
 while our method takes an `Expression`, so first we will need to convert our property expression to the name of a property.
 
-Parsing expression trees to get property names is a common problem.  There is no shortage code snippets out there
+Parsing expression trees to get property names is a common problem.  There are *alot* of code snippets out there
 showing how it can be done.  Here is how I am going to approach it:
 
 ```csharp
@@ -286,7 +286,7 @@ private Stack<string> GetPropertyPath<TProperty>(Expression<Func<T, TProperty>> 
 
 One thing to note here is I am returning a `Stack<string>`.  I wanted to be able to support accessing nested properties
 directly, like `request.IsDefined(x => x.Address.City, out var city)`.  To do that, we will need to keep track of the
-property path from the root of the JSON document down to the value we are interested in.
+*property path* from the root of the JSON document down to the value we are interested in.
 
 Now that we have a function to get the property names, let's use it to start searching the `JsonDocument`.
 
@@ -320,7 +320,7 @@ descend deeper into the `JsonDocument` until either we don't find the specified 
 reach the end of `propertyPath`.  If we get out of the loop without returning, we have the value
 we are looking for.
 
-At this point we have a `JsonElement`.  We need to convert this to `TProperty`.  For that, we can use
+At this point we have a `JsonElement`.  We need to convert this to a value of `TProperty`.  For that, we can use
 [JsonSerializer.Deserialize](https://docs.microsoft.com/en-us/dotnet/api/system.text.json.jsonserializer.deserialize?view=netcore-3.0#System_Text_Json_JsonSerializer_Deserialize__1_System_String_System_Text_Json_JsonSerializerOptions_)
 
 ```csharp
@@ -469,13 +469,58 @@ services.AddControllers(config =>
 });
 ```
 
-And that should do it.  Now if we send a JSON Merge Patch document to our controller action, we can inspect it
-like we intend, and patch our resource as necessary.
+And that should do it.  We can now create controller actions with `JsonMergePatch<T>` parameters, and use the
+class to patch up our backend models.
 
 ### Wrapping up
 All in all, I am pretty happy with how this turned out.  In not very much code, I was able to get a decent
 JSON Merge Patch implementation working.  I have used this approach on a couple of different projects, and it
 has served me well so far.
+
+Potential enhancements might be to automatically apply the patch to some target object.  I am not a huge fan
+of that idea however.  Typically, my controller actions will take some anemic DTO type, and the value I want to patch
+will be a full domain model.  For instance, my `Person` domain model may not have a setter for `Address`, but
+instead have an `UpdateAddress(Address)` that has some business logic in it.
+
+```csharp
+public class PersonDomainModel
+{
+    public Guid Identifier { get; }
+    public string? Name { get; }
+    public Address? Address { get; private set; }
+    
+    public void UpdateAddress(Address newAddress)
+    {
+        // perhaps some checks to validate the address
+        if (newAddress != null && newAddress.State == null)
+        {
+            // just a silly rule, but hopefully you get the idea
+            throw new InvalidOperationException("A person's address must have a State");
+        }
+        
+        Address = newAddress;
+        
+        // maybe changing the address should also raise a [DomainEvent](https://docs.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-events-design-implementation)        
+        Raise(new AddressUpdated(Identifier, newAddress);
+    }
+}
+```
+
+With that in mind, it is easy enough to use the `JsonMergePatch` class as is to apply the correct behavior like so:
+
+```csharp
+public IActionResult BetterPatch(Guid personId, [FromBody]JsonMergePatch<Person> request)
+{
+    ...
+    
+    if (request.IsDefined(x => x.Address, out var address))
+    {
+        personDomainModel.UpdateAddress(address);
+    }
+    
+    ...
+}
+```
 
 You can view all the code [here](https://primarilysoftware.visualstudio.com/_git/JsonMergePatch).  I have a pre-release
 [nuget package](https://www.nuget.org/packages/JsonMergePatch/1.0.0-CI-20190822-054746) published as well.  Feel free
