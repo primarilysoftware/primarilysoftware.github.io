@@ -1,0 +1,7 @@
+---
+layout: post
+title: "C# Value Object Redux"
+comments: true
+description: "Yet another take on implementing value objects in C# using tuples"
+keywords: ".net, c#, csharp, ddd, domain drive design, value objects"
+---
