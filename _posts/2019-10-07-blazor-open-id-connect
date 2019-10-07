@@ -1,0 +1,7 @@
+---
+layout: post
+title: "Blazor OpenID Connect/OAuth 2.0"
+comments: true
+description: "Authentication and authorization in Blazor app using OpenID Connect/OAuth 2.0"
+keywords: ".net, c#, csharp, blazor, asp.net, oidc, openid connect, oauth"
+---
