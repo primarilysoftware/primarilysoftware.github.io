@@ -1,0 +1,7 @@
+---
+layout: post
+title: "Blazor Dual Mode"
+comments: true
+description: "Sample configuration for a Blazor app that allows easy toggling between Server Side and Client Side rendering."
+keywords: ".net, c#, blazor, razor, web assembly, signalr, asp.net"
+---
