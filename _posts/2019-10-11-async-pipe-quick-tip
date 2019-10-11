@@ -2,3 +2,7 @@
 
 use this to work around issue with falsy observables using async pipe
 also use this to materialize multiple async values
+
+<mat-row *matRowDef="let row; columns: displayColumns;" [hidden]="context.loading"></mat-row>
+
+use this to hide table rows while loading
